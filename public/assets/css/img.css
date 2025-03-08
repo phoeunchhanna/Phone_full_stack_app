@@ -1,0 +1,33 @@
+.custom-file-upload {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    width: 100%; /* Adjust as needed */
+    height: 120px; /* Adjust as needed */
+    border: 2px dashed #0d6efd; /* Dashed border */
+    border-radius: 8px; /* Rounded corners */
+    background-color: #f9f9f9; /* Light background */
+    text-align: center; /* Center text */
+    transition: background-color 0.3s ease; /* Smooth transition */
+}
+
+.custom-file-upload:hover {
+    background-color: #e6e6e6; /* Change background on hover */
+}
+
+.custom-label {
+    display: flex;
+    flex-direction: column; /* Stack label and image */
+    align-items: center; /* Center horizontally */
+    justify-content: center; /* Center vertically */
+    color: #b5bcbd; /* Text color */
+    font-size: 16px; /* Font size */
+    font-weight: bold; /* Bold text */
+    cursor: pointer; /* Pointer cursor */
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+}
+
+input[type="file"] {
+    display: none; /* Hide the default file input */
+}
