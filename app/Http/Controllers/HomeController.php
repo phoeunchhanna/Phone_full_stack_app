@@ -1,12 +1,13 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Models\Expense;
+use Illuminate\Http\Request;
+use App\Models\Sale;
 use App\Models\Purchase;
-use App\Models\PurchasePayment;
-use App\Models\SalePayment;
-use App\Models\SaleReturnPayment;
-use Illuminate\Support\Facades\DB;
+use App\Models\Expense;
+use App\Models\SaleReturn;
+use App\Models\Customer;
+use App\Models\Supplier;
 
 class HomeController extends Controller
 {
@@ -28,35 +29,43 @@ class HomeController extends Controller
             })->only([$action]);
         }
     }
-
     public function index()
     {
-        $totalProducts = DB::table('products')->count();
-        $totalRevenue  = SalePayment::sum('amount');
-        $totalExpenses =  Expense::sum('amount') + PurchasePayment::sum('amount') + SaleReturnPayment::sum('amount');
+        // គណនាចំណូលដោយដកការបង្វែត្រឡប់ចេញ
+        $totalRevenue = Sale::sum('total_amount') - SaleReturn::sum('total_amount');
+        
+        // គណនាចំណាយសរុប (ការទិញ + ចំណាយផ្សេងៗ)
+        $totalExpenses = Purchase::sum('total_amount') + Expense::sum('amount');
+
+        // គណនាចំណេញ/ខាត (Rename to $totalProfit)
         $totalProfit = $totalRevenue - $totalExpenses;
-        return view('home', compact('totalProducts', 'totalRevenue', 'totalExpenses', 'totalProfit'));
+
+        // គណនាចំនួនប្រតិបត្តិការសំខាន់ៗ
+        $totalSales = Sale::count();
+        $totalReturns = SaleReturn::count();
+        $totalPurchases = Purchase::count();
+        $totalCustomers = Customer::count();
+        $totalSuppliers = Supplier::count();
+
+        return view('home', compact(
+            'totalRevenue',
+            'totalExpenses',
+            'totalProfit', // Fixed variable name
+            'totalSales',
+            'totalReturns',
+            'totalPurchases',
+            'totalCustomers',
+            'totalSuppliers'
+        ));
     }
-    //     // Total Products and Customers
-    //     $totalProducts  = DB::table('products')->count();
-
-    //     $income = DB::table('sale_details')->sum('total_price');
-    //     $Revenue   = DB::table('sales')->sum(DB::raw('paid_amount'));
-
-    //     // Total Expenses
-    //     $expence = DB::table('expenses')->sum('amount');
-    //     $totalExpenses = DB::table('purchase_payments')->sum(DB::raw('amount')) + $expence;
-
-    //     $totalRevenue      = DB::table('sale_details')->sum(DB::raw('total_price'));
-    //     $totalSalePayments = DB::table('sale_payments')->sum('amount');
-
+    // public function index()
+    // {
+    //     $totalProducts = DB::table('products')->count();
+    //     $totalRevenue  = SalePayment::sum('amount');
+    //     $totalExpenses =  Expense::sum('amount') + PurchasePayment::sum('amount') + SaleReturnPayment::sum('amount');
     //     $totalProfit = $totalRevenue - $totalExpenses;
-
-    //     // Pass the data to the view
-    //     return view('home', compact('totalProducts', 'totalExpenses', 'totalProfit', 'totalRevenue'));
-
+    //     return view('home', compact('totalProducts', 'totalRevenue', 'totalExpenses', 'totalProfit'));
     // }
-
     public function userhome()
     {
         return view('userhome');

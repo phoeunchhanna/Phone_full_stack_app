@@ -58,11 +58,19 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-12">
-                                        <div class="student-submit mt-3">
-                                            <button type="submit" class="btn btn-primary w-100">រក្សាទុក</button>
+                                    <div class="mt-3 d-flex justify-content-end">
+                                        <div class="form-group mt-4">
+                                            <button type="submit" class="btn btn-primary btn-lg" id="saveButton">រក្សាទុក<i
+                                                    class="bi bi-check-lg"></i></button>
+                                            <button class="btn btn-primary btn-lg" type="button" disabled=""
+                                                id="savingButton" style="display: none;">
+                                                <span class="spinner-border spinner-border-sm me-1" role="status"
+                                                    aria-hidden="true"></span>
+                                                កំពុងរក្សាទុក...
+                                            </button>
                                         </div>
                                     </div>
+                                </div>
                                 </form>
                             </div>
                         </div>
@@ -71,4 +79,14 @@
             </div>
         </div>
     </div>
+    <script>
+        document.getElementById('formcreate').addEventListener('submit', function(event) {
+            event.preventDefault();
+            document.getElementById('saveButton').style.display = 'none';
+            document.getElementById('savingButton').style.display = 'inline-block';
+            setTimeout(() => {
+                document.getElementById('formcreate').submit();
+            }, 500);
+        });
+    </script>
 @endsection

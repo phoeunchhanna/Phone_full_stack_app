@@ -28,15 +28,15 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
-     // Check if the user is an Admin
-     public function isAdmin()
-     {
-         return $this->user_type === 'admin';
-     }
+    //  // Check if the user is an Admin
+    //  public function isAdmin()
+    //  {
+    //      return $this->user_type === 'admin';
+    //  }
  
-     // Check if the user is a Cashier
-     public function isCashier()
-     {
-         return $this->user_type === 'cashier';
-     }
+    //  // Check if the user is a Cashier
+    //  public function isCashier()
+    //  {
+    //      return $this->user_type === 'cashier';
+    //  }
 }

@@ -33,9 +33,10 @@ class ExpenseCategoryController extends Controller
 
     public function index()
     {
-        $categories = ExpenseCategory::all();
+        $categories = ExpenseCategory::orderBy('created_at', 'desc')->get(); // Show newest first
         return view('admin.expense.categories.index', compact('categories'));
     }
+    
 
     public function create()
     {

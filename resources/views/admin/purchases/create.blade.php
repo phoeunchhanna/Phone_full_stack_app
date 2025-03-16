@@ -34,19 +34,7 @@
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-lg-3 col-md-6">
-                                        <div class="form-group">
-                                            <label for="reference">លេខយោង</label>
-                                            <input type="text" class="form-control" name="reference" required readonly
-                                                value="PUR-">
-                                            @error('reference')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-3 col-md-6">
+                                    <div class="col-lg-4 col-md-6">
                                         <div class="form-group">
                                             <label for="supplier_id">អ្នកផ្គត់ផ្គង់ <span
                                                     class="text-danger">*</span></label>
@@ -65,14 +53,14 @@
                                             @enderror
                                         </div>
                                     </div>
-                                    <div class="col-lg-3 col-md-6">
+                                    <div class="col-lg-4 col-md-6">
                                         <div class="form-group">
                                             <label for="date">កាលបរិច្ឆេទ </span></label>
                                             <input type="date" class="form-control" name="date" required
                                                 value="{{ now()->format('Y-m-d') }}" max="{{ now()->format('Y-m-d') }}">
                                         </div>
                                     </div>
-                                    <div class="col-lg-3 col-md-6">
+                                    <div class="col-lg-4 col-md-6">
                                         <div class="form-group">
                                             <label for="status">ស្ថានភាព <span class="text-danger">*</span></label>
                                             <select class="form-control form-select" name="status" id="status" required>
@@ -195,8 +183,14 @@
                                     </div>
                                     <div class="mt-3 d-flex justify-content-end">
                                         <div class="form-group mt-4">
-                                            <button type="submit" class="btn btn-lg btn-primary ms-2"
-                                                id="btnsave">រក្សារទុក <i class="bi bi-check-lg"></i></button>
+                                            <button type="submit" class="btn btn-primary btn-lg" id="saveButton">រក្សាទុក<i
+                                                    class="bi bi-check-lg"></i></button>
+                                            <button class="btn btn-primary btn-lg" type="button" disabled=""
+                                                id="savingButton" style="display: none;">
+                                                <span class="spinner-border spinner-border-sm me-1" role="status"
+                                                    aria-hidden="true"></span>
+                                                កំពុងរក្សាទុក...
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -207,7 +201,16 @@
             </div>
         </div>
     </div>
-
+    <script>
+        document.getElementById('formcreate').addEventListener('submit', function(event) {
+            event.preventDefault();
+            document.getElementById('saveButton').style.display = 'none';
+            document.getElementById('savingButton').style.display = 'inline-block';
+            setTimeout(() => {
+                document.getElementById('formcreate').submit();
+            }, 500);
+        });
+    </script>
     <script>
         $(document).ready(function() {
             $.ajaxSetup({
@@ -335,7 +338,7 @@
                             $("#totalPrice").text(response.totalPrice || "0.00");
 
                             if (response.cartItems && response.cartItems.length > 0) {
-                                $("#btnsave").prop("disabled", false);
+                                $("#saveButton").prop("disabled", false);
                                 $.each(response.cartItems, function(index, item) {
                                     const itemTotal = (item.quantity * item.price).toFixed(2);
                                     total += parseFloat(itemTotal);
@@ -356,7 +359,7 @@
                                     `);
                                 });
                             } else {
-                                $("#btnsave").prop("disabled", true);
+                                $("#saveButton").prop("disabled", true);
                                 cartBody.append(`
                                     <tr>
                                         <td colspan="6" class="text-center "><h5 class="text-danger">គ្មានទិន្នន័យ</h5></td>

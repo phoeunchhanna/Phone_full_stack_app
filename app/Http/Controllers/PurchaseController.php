@@ -9,6 +9,7 @@ use App\Models\PurchasePayment;
 use App\Models\Stock;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -38,7 +39,7 @@ class PurchaseController extends Controller
 
     public function index()
     {
-        $purchases = Purchase::with('supplier')->orderBy('created_at', 'desc')->paginate(10);
+        $purchases = Purchase::with('supplier')->orderBy('created_at', 'desc')->get();
         return view('admin.purchases.index', compact('purchases'));
     }
 
@@ -51,119 +52,105 @@ class PurchaseController extends Controller
 
     public function store(Request $request)
     {
-        $cart = Session::get('cart', []);
+        return DB::transaction(function () use ($request) {
+            $cart = Session::get('cart', []);
 
-        if (empty($cart)) {
-            return redirect()->route('products.index')->with('error', 'គ្មានទិន្នន័យ');
-        }
+            if (empty($cart)) {
+                return redirect()->route('products.index')->with('error', 'គ្មានទិន្នន័យ');
+            }
 
-        $totalAmount   = 0;
-        $totalDiscount = 0;
-
-        $discountType   = $request->discount_type;
-        $discountAmount = $request->discount_amount;
-
-        foreach ($cart as $item) {
-            $totalAmount += $item['quantity'] * $item['price'];
-        }
-
-        if ($discountType == 'percentage') {
-            $totalDiscount = ($totalAmount * $discountAmount) / 100;
-        } elseif ($discountType == 'fixed') {
-            $totalDiscount = $discountAmount;
-        }
-
-        $totalDiscount = min($totalDiscount, $totalAmount);
-
-        // Create the purchase record
-        $purchase = Purchase::create([
-            'date'           => $request->date,
-            'reference'      => 'PUR-10000' . mt_rand(1, 100000),
-            'supplier_id'    => $request->supplier_id,
-            'total_amount'   => $totalAmount,
-            'discount'       => $totalDiscount,
-            'paid_amount'    => $request->paid_amount,
-            'due_amount'     => $totalAmount - $totalDiscount - $request->paid_amount,
-            'status'         => $request->status ?? 'កំពុងរង់ចាំ',
-            'payment_method' => $request->payment_method,
-            'payment_status' => $request->paid_amount >= $totalAmount - $totalDiscount
-            ? 'បានទូទាត់រួច'
-            : ($request->paid_amount > 0 ? 'បានទូទាត់ខ្លះ' : 'មិនទាន់ទូទាត់'),
-            'description'    => $request->description ?? 'គ្មាន',
-        ]);
-        foreach ($cart as $productId => $item) {
             $totalAmount   = 0;
             $totalDiscount = 0;
 
             $discountType   = $request->discount_type;
             $discountAmount = $request->discount_amount;
 
+            // Calculate total amount before applying discount
             foreach ($cart as $item) {
                 $totalAmount += $item['quantity'] * $item['price'];
             }
 
+            // Apply discount
             if ($discountType == 'percentage') {
                 $totalDiscount = ($totalAmount * $discountAmount) / 100;
             } elseif ($discountType == 'fixed') {
                 $totalDiscount = $discountAmount;
             }
-            $purDetailDis = $purchase->discount / count($cart);
-
             $totalDiscount = min($totalDiscount, $totalAmount);
 
-            PurchaseDetail::create([
-                'purchase_id' => $purchase->id,
-                'product_id'  => $productId,
-                'quantity'    => $item['quantity'],
-                'unit_price'  => $item['price'],
-                'discount'    => $purDetailDis,
-                'total_price' => ($item['price'] * $item['quantity']) - ($purDetailDis ?? 0),
+            // Create the purchase record
+            $purchase = Purchase::create([
+                'date'           => $request->date,
+                'reference'      => 'PUR-10000' . mt_rand(1, 100000),
+                'supplier_id'    => $request->supplier_id,
+                'total_amount'   => $totalAmount,
+                'discount'       => $totalDiscount,
+                'paid_amount'    => $request->paid_amount,
+                'due_amount'     => $totalAmount - $totalDiscount - $request->paid_amount,
+                'status'         => $request->status ?? 'កំពុងរង់ចាំ',
+                'payment_method' => $request->payment_method,
+                'payment_status' => $request->paid_amount >= ($totalAmount - $totalDiscount)
+                ? 'បានទូទាត់រួច'
+                : ($request->paid_amount > 0 ? 'បានទូទាត់ខ្លះ' : 'មិនទាន់ទូទាត់'),
+                'description'    => $request->description ?? 'N/A',
             ]);
 
-            if ($request->status == 'បញ្ចប់') {
-                // Find the product by its ID
-                $product = Product::find($productId);
+            $purDetailDis = count($cart) > 0 ? $purchase->discount / count($cart) : 0;
+            // Save purchase details
+            foreach ($cart as $productId => $item) {
+                PurchaseDetail::create([
+                    'purchase_id' => $purchase->id,
+                    'product_id'  => $productId,
+                    'quantity'    => $item['quantity'],
+                    'unit_price'  => $item['price'],
+                    'discount'    => $purDetailDis,
+                    'total_price' => ($item['price'] * $item['quantity']) - $purDetailDis,
+                ]);
 
-                if ($product) {
+                // ✅ Update stock only if status is "បញ្ចប់"
+                if ($request->status == 'បញ្ចប់') {
+                    $product = Product::where('id', $productId)->lockForUpdate()->first();
 
-                    $stock = Stock::where('product_id', $productId)->first();
+                    if ($product) {
+                        $stock = Stock::where('product_id', $productId)->lockForUpdate()->first();
 
-                    if ($stock) {
+                        if ($stock) {
+                            $stock->update([
+                                'last_stock' => $stock->current,
+                                'current'    => $stock->current + $item['quantity'],
+                                'purchase'   => $item['quantity'],
+                            ]);
+                        } else {
+                            $stock = Stock::create([
+                                'product_id' => $productId,
+                                'last_stock' => 0,
+                                'current'    => $item['quantity'],
+                                'purchase'   => $item['quantity'],
+                            ]);
+                        }
 
-                        $stock->update([
-                            'last_stock' => $stock->current,
-                            'current'    => $stock->current + $item['quantity'],
-                            'purchase'   => $item['quantity'],
-                        ]);
-                    } else {
-
-                        Stock::create([
-                            'product_id' => $productId,
-                            'last_stock' => 0,
-                            'current'    => $item['quantity'],
-                            'purchase'   => $item['quantity'],
+                        // ✅ Update product quantity
+                        $product->update([
+                            'quantity' => $stock->current,
                         ]);
                     }
                 }
-                $product->quantity = $stock->current;
-
-                $product->save();
             }
 
-        }
+            Session::forget('cart');
 
-        // Clear the cart after saving the purchase
-        Session::forget('cart');
-        if ($purchase->paid_amount > 0) {
-            PurchasePayment::create([
-                'purchase_id'    => $purchase->id,
-                'date'           => $request->date,
-                'reference'      => 'INV/' . $purchase->reference,
-                'amount'         => $purchase->paid_amount,
-                'payment_method' => $request->payment_method,
-            ]);
-        }
-        return redirect()->route('purchases.index')->with('success', 'ការទិញបានបង្កើតជោគជ័យ។');
+            if ($purchase->paid_amount > 0) {
+                PurchasePayment::create([
+                    'purchase_id'    => $purchase->id,
+                    'date'           => $request->date,
+                    'reference'      => 'INV/' . $purchase->reference,
+                    'amount'         => $purchase->paid_amount,
+                    'payment_method' => $request->payment_method,
+                    'note'           => $request->note ?? 'N/A',
+                ]);
+            }
+            return redirect()->route('purchases.index')->with('success', 'ការទិញបានបង្កើតជោគជ័យ។');
+        });
     }
 
     public function show($id)
@@ -177,6 +164,7 @@ class PurchaseController extends Controller
         $suppliers       = Supplier::all();
         $purchaseDetails = PurchaseDetail::where('purchase_id', $purchase->id)->get();
         $cart            = [];
+
         foreach ($purchaseDetails as $purchaseDetail) {
             $product            = Product::findOrFail($purchaseDetail->product_id);
             $cart[$product->id] = [
@@ -187,6 +175,7 @@ class PurchaseController extends Controller
                 'total'    => ($purchaseDetail->unit_price * $purchaseDetail->quantity) - $purchaseDetail->discount,
             ];
         }
+
         session()->put('cart', $cart);
 
         $discountType   = 'fixed';
@@ -194,126 +183,302 @@ class PurchaseController extends Controller
 
         return view('admin.purchases.edit', compact('suppliers', 'purchase', 'discountType', 'purchaseDetails', 'discountAmount'));
     }
-
     public function update(Request $request, Purchase $purchase)
     {
-        $request->validate([
-            'supplier_id'    => 'required',
-            'date'           => 'required|date',
-            'status'         => 'required|string',
-            'paid_amount'    => 'required|numeric|min:0',
-            'payment_method' => 'required|string',
-            'note'           => 'nullable|string',
-        ]);
+        return DB::transaction(function () use ($request, $purchase) {
+            $request->validate([
+                'supplier_id'    => 'required',
+                'date'           => 'required|date',
+                'status'         => 'required|string',
+                'paid_amount'    => 'required|numeric|min:0',
+                'payment_method' => 'required|string',
+                'note'           => 'nullable|string',
+            ]);
 
-        $cart = Session::get('cart', []);
-        if (empty($cart)) {
-            return redirect()->back()->withErrors('The cart is empty. Please add items before updating the purchase.');
-        }
+            $cart = Session::get('cart', []);
+            if (empty($cart)) {
+                return redirect()->back()->withErrors('The cart is empty. Please add items before updating the purchase.');
+            }
 
-        $totalAmount   = 0;
-        $totalDiscount = 0;
+            $totalAmount   = 0;
+            $totalDiscount = 0;
 
-        // Get supplier and discount data
-        $supplier       = Supplier::findOrFail($request->supplier_id);
-        $discountType   = $request->discount_type;
-        $discountAmount = $request->discount_amount ?? 0;
+            // ✅ Restore old stock before updating purchase
+            $oldPurchaseDetails = PurchaseDetail::where('purchase_id', $purchase->id)->get();
+            foreach ($oldPurchaseDetails as $oldItem) {
+                $product = Product::where('id', $oldItem->product_id)->lockForUpdate()->first();
+                $stock   = Stock::where('product_id', $oldItem->product_id)->lockForUpdate()->first();
 
-        // Calculate total amount and discount
-        foreach ($cart as $item) {
-            $totalAmount += $item['quantity'] * $item['price'];
-        }
-
-        if ($discountType == 'percentage') {
-            $totalDiscount = ($totalAmount * $discountAmount) / 100;
-        } elseif ($discountType == 'fixed') {
-            $totalDiscount = $discountAmount;
-        }
-
-        $totalDiscount = min($totalDiscount, $totalAmount);
-
-        // Update the purchase record
-        $purchase->update([
-            'date'           => $request->date,
-            'supplier_id'    => $request->supplier_id,
-            'reference'      => $request->reference,
-            'total_amount'   => $totalAmount,
-            'discount'       => $totalDiscount,
-            'paid_amount'    => $request->paid_amount,
-            'due_amount'     => $totalAmount - $totalDiscount - $request->paid_amount,
-            'status'         => $request->status,
-            'payment_method' => $request->payment_method,
-            'payment_status' => $request->paid_amount >= $totalAmount - $totalDiscount
-            ? 'បានទូទាត់រួច'
-            : ($request->paid_amount > 0 ? 'បានទូទាត់ខ្លះ' : 'មិនទាន់ទូទាត់'),
-            'description'    => $request->description ?? 'គ្មាន',
-        ]);
-
-        // Remove old purchase details
-        PurchaseDetail::where('purchase_id', $purchase->id)->delete();
-
-        foreach ($cart as $productId => $item) {
-            $product = Product::find($productId);
-
-            if ($request->status == 'បញ្ចប់' && $product) {
-                $stock = Stock::where('product_id', $productId)->first(); // Find stock by product_id
+                if ($product) {
+                    $product->quantity -= $oldItem->quantity; // Revert previous stock update
+                    $product->save();
+                }
 
                 if ($stock) {
-                    // Calculate current stock based on last stock and purchase quantity
-                    $newCurrentStock = $stock->last_stock + $item['quantity'];
+                    $stock->current -= $oldItem->quantity; // Revert previous stock update
+                    $stock->save();
+                }
+            }
 
-                    // Update existing stock
-                    $stock->update([
-                        'current'  => $newCurrentStock,
-                        'purchase' => $item['quantity'],
+            // ✅ Delete old purchase details
+            PurchaseDetail::where('purchase_id', $purchase->id)->delete();
+
+            // ✅ Calculate total amount and discount
+            foreach ($cart as $item) {
+                $totalAmount += $item['quantity'] * $item['price'];
+            }
+
+            $discountType   = $request->discount_type;
+            $discountAmount = $request->discount_amount ?? 0;
+
+            if ($discountType == 'percentage') {
+                $totalDiscount = ($totalAmount * $discountAmount) / 100;
+            } elseif ($discountType == 'fixed') {
+                $totalDiscount = $discountAmount;
+            }
+
+            $totalDiscount = min($totalDiscount, $totalAmount);
+
+            // ✅ Update the purchase record
+            $purchase->update([
+                'date'           => $request->date,
+                'supplier_id'    => $request->supplier_id,
+                'reference'      => $request->reference,
+                'total_amount'   => $totalAmount,
+                'discount'       => $totalDiscount,
+                'paid_amount'    => $request->paid_amount,
+                'due_amount'     => $totalAmount - $totalDiscount - $request->paid_amount,
+                'status'         => $request->status,
+                'payment_method' => $request->payment_method,
+                'payment_status' => $request->paid_amount >= $totalAmount - $totalDiscount
+                ? 'បានទូទាត់រួច'
+                : ($request->paid_amount > 0 ? 'បានទូទាត់ខ្លះ' : 'មិនទាន់ទូទាត់'),
+                'description'    => $request->description ?? 'N/A',
+            ]);
+
+            // ✅ Prevent Division by Zero
+            $purDetailDis = count($cart) > 0 ? $purchase->discount / count($cart) : 0;
+
+            foreach ($cart as $productId => $item) {
+                // ✅ Lock product to prevent race conditions
+                $product = Product::where('id', $productId)->lockForUpdate()->first();
+                if (! $product) {
+                    return redirect()->route('purchases.edit', $purchase->id)->with('error', 'Product not found: ' . $productId);
+                }
+
+                // ✅ Update stock only if status is "បញ្ចប់"
+                if ($request->status == 'បញ្ចប់') {
+                    $stock = Stock::where('product_id', $productId)->lockForUpdate()->first();
+
+                    if ($stock) {
+                        $stock->update([
+                            'last_stock' => $stock->current,
+                            'current'    => $stock->current + $item['quantity'],
+                            'purchase'   => $item['quantity'],
+                        ]);
+                    } else {
+                        $stock = Stock::create([
+                            'product_id' => $productId,
+                            'last_stock' => 0,
+                            'current'    => $item['quantity'],
+                            'purchase'   => $item['quantity'],
+                        ]);
+                    }
+
+                    // ✅ Update the product's quantity
+                    $product->update([
+                        'quantity' => $stock->current,
                     ]);
                 }
-                // Update the product's quantity
-                $product->update([
-                    'quantity' => $product->quantity + $item['quantity'],
-                ]);
-                $product->quantity = $stock->current;
-                $product->save();
 
-            }
-            $purDetailDis = $purchase->discount / count($cart);
-
-            // Update purchase details
-            PurchaseDetail::updateOrCreate(
-                ['purchase_id' => $purchase->id, 'product_id' => $productId],
-                [
+                // ✅ Insert purchase details
+                PurchaseDetail::create([
+                    'purchase_id' => $purchase->id,
+                    'product_id'  => $productId,
                     'unit_price'  => $item['price'],
                     'quantity'    => $item['quantity'],
                     'discount'    => $purDetailDis,
                     'total_price' => ($item['price'] * $item['quantity']) - $purDetailDis,
-                ]
-            );
-        }
+                ]);
+            }
 
-        // Clear cart session
-        session()->forget('cart');
+            // ✅ Clear cart session
+            Session::forget('cart');
 
-        // Update purchase payment
-        if ($purchase->paid_amount > 0) {
-            PurchasePayment::updateOrCreate(
-                ['purchase_id' => $purchase->id],
-                [
-                    'date'           => $request->date,
-                    'reference'      => 'INV/' . $purchase->reference,
-                    'amount'         => $purchase->paid_amount,
-                    'payment_method' => $request->payment_method,
-                ]
-            );
-        }
+            // ✅ Update or create purchase payment
+            if ($purchase->paid_amount > 0) {
+                PurchasePayment::updateOrCreate(
+                    ['purchase_id' => $purchase->id],
+                    [
+                        'date'           => $request->date,
+                        'reference'      => 'INV/' . $purchase->reference,
+                        'amount'         => $purchase->paid_amount,
+                        'payment_method' => $request->payment_method,
+                        'note'           => $request->note ?? 'N/A',
+                    ]
+                );
+            }
 
-        return redirect()->route('purchases.index')->with('success', 'ការទិញត្រូវបានកែប្រែដោយជោគជ័យ.');
+            return redirect()->route('purchases.index')->with('success', 'ការទិញត្រូវបានកែប្រែដោយជោគជ័យ.');
+        });
     }
+    // public function update(Request $request, Purchase $purchase)
+    // {
+    //     $request->validate([
+    //         'supplier_id'    => 'required',
+    //         'date'           => 'required|date',
+    //         'status'         => 'required|string',
+    //         'paid_amount'    => 'required|numeric|min:0',
+    //         'payment_method' => 'required|string',
+    //         'note'           => 'nullable|string',
+    //     ]);
 
+    //     $cart = Session::get('cart', []);
+    //     if (empty($cart)) {
+    //         return redirect()->back()->withErrors('The cart is empty. Please add items before updating the purchase.');
+    //     }
+
+    //     $totalAmount   = 0;
+    //     $totalDiscount = 0;
+
+    //     // Get supplier and discount data
+    //     $supplier       = Supplier::findOrFail($request->supplier_id);
+    //     $discountType   = $request->discount_type;
+    //     $discountAmount = $request->discount_amount ?? 0;
+
+    //     // Calculate total amount and discount
+    //     foreach ($cart as $item) {
+    //         $totalAmount += $item['quantity'] * $item['price'];
+    //     }
+
+    //     if ($discountType == 'percentage') {
+    //         $totalDiscount = ($totalAmount * $discountAmount) / 100;
+    //     } elseif ($discountType == 'fixed') {
+    //         $totalDiscount = $discountAmount;
+    //     }
+
+    //     $totalDiscount = min($totalDiscount, $totalAmount);
+
+    //     // Update the purchase record
+    //     $purchase->update([
+    //         'date'           => $request->date,
+    //         'supplier_id'    => $request->supplier_id,
+    //         'reference'      => $request->reference,
+    //         'total_amount'   => $totalAmount,
+    //         'discount'       => $totalDiscount,
+    //         'paid_amount'    => $request->paid_amount,
+    //         'due_amount'     => $totalAmount - $totalDiscount - $request->paid_amount,
+    //         'status'         => $request->status,
+    //         'payment_method' => $request->payment_method,
+    //         'payment_status' => $request->paid_amount >= $totalAmount - $totalDiscount
+    //         ? 'បានទូទាត់រួច'
+    //         : ($request->paid_amount > 0 ? 'បានទូទាត់ខ្លះ' : 'មិនទាន់ទូទាត់'),
+    //         'description'    => $request->description ?? 'N/A',
+    //     ]);
+
+    //     PurchaseDetail::where('purchase_id', $purchase->id)->delete();
+
+    //     foreach ($cart as $productId => $item) {
+    //         $product = Product::find($productId);
+
+    //         if ($request->status == 'បញ្ចប់' && $product) {
+    //             $stock = Stock::where('product_id', $productId)->first();
+
+    //             if ($stock) {
+    //                 $newCurrentStock = $stock->last_stock + $item['quantity'];
+
+    //                 // Update existing stock
+    //                 $stock->update([
+    //                     'current'  => $newCurrentStock,
+    //                     'purchase' => $item['quantity'],
+    //                 ]);
+    //             }
+    //             // Update the product's quantity
+    //             $product->update([
+    //                 'quantity' => $product->quantity + $item['quantity'],
+    //             ]);
+    //             $product->quantity = $stock->current;
+    //             $product->save();
+    //         }
+
+    //         $purDetailDis = $purchase->discount / count($cart);
+
+    //         // Update purchase details
+    //         PurchaseDetail::updateOrCreate(
+    //             ['purchase_id' => $purchase->id, 'product_id' => $productId],
+    //             [
+    //                 'unit_price'  => $item['price'],
+    //                 'quantity'    => $item['quantity'],
+    //                 'discount'    => $purDetailDis,
+    //                 'total_price' => ($item['price'] * $item['quantity']) - $purDetailDis,
+    //             ]
+    //         );
+    //     }
+
+    //     // Clear cart session
+    //     session()->forget('cart');
+
+    //     // Update or create purchase payment
+    //     if ($purchase->paid_amount > 0) {
+    //         PurchasePayment::updateOrCreate(
+    //             ['purchase_id' => $purchase->id],
+    //             [
+    //                 'date'           => $request->date,
+    //                 'reference'      => 'INV/' . $purchase->reference,
+    //                 'amount'         => $purchase->paid_amount,
+    //                 'payment_method' => $request->payment_method,
+    //                 'note'           => $request->note ?? 'N/A',
+    //             ]
+    //         );
+    //     }
+
+    //     return redirect()->route('purchases.index')->with('success', 'ការទិញត្រូវបានកែប្រែដោយជោគជ័យ.');
+    // }
     public function destroy(Purchase $purchase)
     {
-        $purchase->delete();
-        return redirect()->route('purchases.index')->with('success', 'ការទិញត្រូវបានលុបដោយជោគជ័យ.');
+        return DB::transaction(function () use ($purchase) {
+            if ($purchase->paid_amount > 0) {
+                return redirect()->route('purchases.index')->with('error', 'មិនអាចលុបការទិញដែលមានការទូទាត់។ សូមបង្រួបបង្រួមឬដកប្រាក់សងសិន។');
+            }
+            $purchaseDetails = PurchaseDetail::where('purchase_id', $purchase->id)->get();
+
+            if ($purchase->status == 'បញ្ចប់') {
+                foreach ($purchaseDetails as $detail) {
+                    $this->rollbackStock($detail->product_id, $detail->quantity);
+                }
+            }
+
+            // ✅ 4. លុបទិន្នន័យ Purchase Detail និង Payment
+            PurchaseDetail::where('purchase_id', $purchase->id)->delete();
+            PurchasePayment::where('purchase_id', $purchase->id)->delete();
+
+            // ✅ 5. លុបការទិញ
+            $purchase->delete();
+
+            return redirect()->route('purchases.index')->with('success', 'ការទិញត្រូវបានលុបដោយជោគជ័យ។');
+        });
     }
+    private function rollbackStock($productId, $quantity)
+    {
+        $stock = Stock::where('product_id', $productId)->first();
+        if ($stock) {
+            $stock->update([
+                'current'  => max(0, $stock->current - $quantity),
+                'purchase' => max(0, $stock->purchase - $quantity),
+            ]);
+
+            $product = Product::find($productId);
+            if ($product) {
+                $product->update(['quantity' => $stock->current]);
+            }
+        }
+    }
+
+    // public function destroy(Purchase $purchase)
+    // {
+    //     $purchase->delete();
+    //     return redirect()->route('purchases.index')->with('success', 'ការទិញត្រូវបានលុបដោយជោគជ័យ.');
+    // }
 
     public function clear()
     {

@@ -77,7 +77,7 @@
                                                                 class="bi bi-pencil-square"></i></a>
                                                             @endcan
                                                         @can('លុបអ្នកប្រើប្រាស់')
-                                                        @if (auth()->user()->id !== $user->id)
+                                                        @if (auth()->user()->id !== $user->id && $user->roles->first()->name !== 'admin')
                                                         <form action="{{ route('users.destroy', $user) }}"
                                                             method="POST" style="display:inline;"
                                                             id="deleteForm{{ $user->id }}">

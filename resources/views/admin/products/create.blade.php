@@ -82,18 +82,6 @@
                                                 </div>
                                             </div>
                                             <div class="col-12 col-sm-6">
-                                                {{-- <div class="input-group">
-                                                    <button class="btn btn-primary" data-bs-toggle="modal"
-                                                        data-bs-target="#createcustomers">
-                                                        បន្ថែម <i class="fas fa-plus"></i>
-                                                    </button>
-                                                    <select class="form-select form-control" id="customerSelect" name="customer_id"
-                                                        required>
-                                                        @foreach ($customers as $customer)
-                                                            <option value="{{ $customer->id }}">{{ $customer->name }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </div> --}}
                                                 <div class="mb-5">
                                                     <label for="brand_id" class="form-label">ប្រភេទផលិតផល <span
                                                             class="text-danger">* <a href="#" data-bs-toggle="modal"
@@ -117,7 +105,8 @@
                                                 <div class="mb-3">
                                                     <label for="brand_id" class="form-label">ម៉ាកយីហោ <span
                                                             class="text-danger">*<a href="#" data-bs-toggle="modal"
-                                                                data-bs-target="#createbrands"> បន្ថែមប្រភេទផលិតផល</a></span></label>
+                                                                data-bs-target="#createbrands">
+                                                                បន្ថែមប្រភេទផលិតផល</a></span></label>
                                                     <select name="brand_id" id="brand_id"
                                                         class="form-select form-select-lg mb-3 fs-6" required>
                                                         <option value="">----ជ្រើសរើសម៉ាកយីហោ----</option>
@@ -131,21 +120,10 @@
                                             <div class="col-12 col-sm-6">
                                                 <label for="condition">លក្ខណៈ</label>
                                                 <select class="form-control form-select" id="condition" name="condition">
-                                                    <option value="ថ្មី">ថ្មី</option>
+                                                    <option value="ថ្មី">ផលិតផលថ្មី</option>
                                                     <option value="មួយទឹក">មួយទឹក</option>
-                                                    <option value="សម្រាប់ហ្វ្រីជូន">សម្រាប់ហ្វ្រីជូន</option>
+                                                    <option value="ប្តូរយកលុយ">ប្តូរយកលុយ</option>
                                                 </select>
-                                            </div>
-                                            <div class="col-12 col-sm-6">
-                                                <div class="mb-3">
-                                                    <label for="status" class="form-label">ស្ថានភាព <span
-                                                            class="text-danger">*</span></label>
-                                                    <select name="status" id="status"
-                                                        class="form-select form-select-lg mb-3 fs-6" required>
-                                                        <option value="1">សកម្ម</option>
-                                                        <option value="0">មិនសកម្ម</option>
-                                                    </select>
-                                                </div>
                                             </div>
                                             <div class="col-12 col-sm-12">
                                                 <div class="form-group">
@@ -203,12 +181,15 @@
                                     <div class="form-group mt-4">
                                         <button type="submit" class="btn btn-primary btn-lg" id="saveButton">រក្សាទុក<i
                                                 class="bi bi-check-lg"></i></button>
-                                        <button type="button" class="btn btn-primary btn-lg" id="savingButton"
-                                            style="display: none;" disabled>
+                                        <button class="btn btn-primary btn-lg" type="button" disabled=""
+                                            id="savingButton" style="display: none;">
+                                            <span class="spinner-border spinner-border-sm me-1" role="status"
+                                                aria-hidden="true"></span>
                                             កំពុងរក្សាទុក...
                                         </button>
                                     </div>
                                 </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -224,7 +205,6 @@
             event.preventDefault();
             document.getElementById('saveButton').style.display = 'none';
             document.getElementById('savingButton').style.display = 'inline-block';
-
             setTimeout(() => {
                 document.getElementById('formcreate').submit();
             }, 500);

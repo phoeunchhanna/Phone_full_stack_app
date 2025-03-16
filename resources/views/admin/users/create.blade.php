@@ -78,7 +78,16 @@
                                             </div>
                                         @enderror
                                     </div>
-
+                                    <div class="col-md-6 mb-3" style="display: none">
+                                        <label for="user_type" class="form-label">ប្រភេទអ្នកប្រើប្រាស់</label>
+                                        <input type="user_type" class="form-control" id="user_type" name="user_type"
+                                            readonly>
+                                        @error('user_type')
+                                            <div class="invalid-feedback">
+                                                {{ $message }}
+                                            </div>
+                                        @enderror
+                                    </div>
                                     <!-- Confirm Password Field -->
                                     <div class="col-md-6 mb-3">
                                         <label for="password_confirmation" class="form-label">បញ្ជាក់លេខសម្ងាត់<span
@@ -112,64 +121,32 @@
                                             <div class="text-danger small mt-2">{{ $message }}</div>
                                         @enderror
                                     </div>
-
-                                    <!-- User Type Field -->
-                                    <div class="col-md-6 mb-3 " style="display: none">
-                                        <label for="user_type" class="form-label">ប្រភេទអ្នកប្រើប្រាស់<span
-                                                class="text-danger">*</span></label>
-                                        <select class="form-select @error('user_type') is-invalid @enderror" id="user_type"
-                                            name="user_type" required>
-                                            <option value="cashier">Cashier</option>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="role" class="form-label">ជ្រើសរើសតួរនាទីរបស់អ្នកប្រើប្រាស់</label>
+                                        <select name="role" id="role" class="form-select form-select-lg mb-3 fs-6" required>
+                                            <option value="">----ជ្រើសរើសតួរនាទី----</option>
+                                            @foreach ($roles as $role)
+                                                <option value="{{ $role->name }}" @if (old('role') == $role->name) selected @endif>
+                                                    {{ $role->name }}
+                                                </option>
+                                            @endforeach
                                         </select>
-                                        @error('user_type')
+                                        @error('role')
                                             <div class="invalid-feedback">
                                                 {{ $message }}
                                             </div>
                                         @enderror
                                     </div>
-
-{{--
-
-                                    <div class="col-md-6 mb-3 ">
-                                        <div class="grid grid-cols-4">
-                                            @if ($roles->isNotEmpty())
-                                                @foreach ($roles as $role)
-                                                    <div class="mt-3">
-                                                        <input type="checkbox" id="role-{{ $role->id}}" class="rounded" name="role[]" value="{{ $role->name }}">
-                                                        <label id="role" for="">{{ $role->name }}</label>
-                                                    </div>
-                                                @endforeach
-                                            @endif
-                                        </div>
-                                    </div> --}}
-
-
-
-
-                                    <div class="col-md-6 mb-3">
-                                        <div class="grid grid-cols-4">
-                                            @if ($roles->isNotEmpty())
-                                                @foreach ($roles as $role)
-                                                    <div class="mt-3">
-                                                        <input type="checkbox" id="role-{{ $role->id }}" class="rounded" name="role[]" value="{{ $role->name }}"
-                                                            @if ($role->name == 'admin') checked disabled @endif>
-                                                        <label for="role-{{ $role->id }}">{{ $role->name }}</label>
-                                                    </div>
-                                                @endforeach
-                                            @endif
-                                        </div>
-                                    </div>
-
-
-
-
-
-
-                                    {{-- Submit and Cancel Buttons --}}
                                     <div class="mt-3 d-flex justify-content-end">
                                         <div class="form-group mt-4">
-                                            <button type="submit" class="btn btn-lg btn-primary ms-2"
-                                                id="btnsave">រក្សារទុក <i class="bi bi-check-lg"></i></button>
+                                            <button type="submit" class="btn btn-primary btn-lg"
+                                                id="saveButton">រក្សាទុក<i class="bi bi-check-lg"></i></button>
+                                            <button class="btn btn-primary btn-lg" type="button" disabled=""
+                                                id="savingButton" style="display: none;">
+                                                <span class="spinner-border spinner-border-sm me-1" role="status"
+                                                    aria-hidden="true"></span>
+                                                កំពុងរក្សាទុក...
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -180,6 +157,16 @@
             </div>
         </div>
     </div>
+    <script>
+        document.getElementById('formcreate').addEventListener('submit', function(event) {
+            event.preventDefault();
+            document.getElementById('saveButton').style.display = 'none';
+            document.getElementById('savingButton').style.display = 'inline-block';
+            setTimeout(() => {
+                document.getElementById('formcreate').submit();
+            }, 500);
+        });
+    </script>
     <script>
         function showPreview(event) {
             const file = event.target.files[0];
@@ -192,13 +179,15 @@
             }
         }
     </script>
-        <style>
-            /* Grid layout for permissions */
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Auto adjusts columns based on screen size */
-        gap: 16px; /* Space between the grid items */
-        margin-top: 10px;
-    }
-</style>
+    <style>
+        /* Grid layout for permissions */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            /* Auto adjusts columns based on screen size */
+            gap: 16px;
+            /* Space between the grid items */
+            margin-top: 10px;
+        }
+    </style>
 @endsection

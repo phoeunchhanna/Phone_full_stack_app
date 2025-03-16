@@ -21,7 +21,7 @@
                     <div class="card comman-shadow">
                         <div class="card-body">
                             <form action="{{ route('products.update', $product->id) }}" method="POST"
-                                enctype="multipart/form-data" id="formupdate">
+                                enctype="multipart/form-data" id="formcreate">
                                 @csrf
                                 @method('PUT')
                                 <div class="form-group d-flex align-items-center justify-content-between">
@@ -131,21 +131,6 @@
                                                         សម្រាប់ហ្វ្រីជូន</option>
                                                 </select>
                                             </div>
-                                            <div class="col-12 col-sm-6">
-                                                <div class="mb-3">
-                                                    <label for="status" class="form-label">ស្ថានភាព <span
-                                                            class="text-danger">*</span></label>
-                                                    <select name="status" id="status"
-                                                        class="form-select form-select-lg mb-3 fs-6" required>
-                                                        <option value="ថ្មី"
-                                                            {{ old('status', $product->status) == 'ថ្មី' ? 'selected' : '' }}>
-                                                            សកម្ម</option>
-                                                        <option value="មួយទឹក"
-                                                            {{ old('status', $product->status) == 'មួយទឹក' ? 'selected' : '' }}>
-                                                            មិនសកម្ម</option>
-                                                    </select>
-                                                </div>
-                                            </div>
                                             <div class="col-12 col-sm-12">
                                                 <div class="form-group">
                                                     <br>
@@ -173,7 +158,7 @@
                                                 <label for="image">រូបភាពផលិតផល</label>
                                                 <img style="width: 145px; height: 145px;"
                                                     class="d-block mx-auto img-thumbnail img-fluid mb-2"
-                                                    src="{{ asset($product->image) }}" alt="រូបភាពផលិតផល"
+                                                    src="{{ asset('storage/' . $stock->product->image) }}" alt="រូបភាពផលិតផល"
                                                     id="product-image-preview">
                                                 <!-- Input ស្វ័យសម្គាល់ -->
                                                 <input id="image" type="file" name="image" accept="image/*"
@@ -199,14 +184,17 @@
                                 </div>
                                 <div class="mt-3 d-flex justify-content-end">
                                     <div class="form-group mt-4">
-                                        <button type="submit" class="btn btn-primary btn-lg"
-                                            id="saveButton">រក្សាទុក</button>
-                                        <button type="button" class="btn btn-primary btn-lg" id="savingButton"
-                                            style="display: none;" disabled>
+                                        <button type="submit" class="btn btn-primary btn-lg" id="saveButton">រក្សាទុក<i
+                                                class="bi bi-check-lg"></i></button>
+                                        <button class="btn btn-primary btn-lg" type="button" disabled=""
+                                            id="savingButton" style="display: none;">
+                                            <span class="spinner-border spinner-border-sm me-1" role="status"
+                                                aria-hidden="true"></span>
                                             កំពុងរក្សាទុក...
                                         </button>
                                     </div>
                                 </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -215,13 +203,12 @@
         </div>
     </div>
     <script>
-        document.getElementById('formupdate').addEventListener('submit', function(event) {
+        document.getElementById('formcreate').addEventListener('submit', function(event) {
             event.preventDefault();
             document.getElementById('saveButton').style.display = 'none';
             document.getElementById('savingButton').style.display = 'inline-block';
-
             setTimeout(() => {
-                document.getElementById('formupdate').submit();
+                document.getElementById('formcreate').submit();
             }, 500);
         });
     </script>

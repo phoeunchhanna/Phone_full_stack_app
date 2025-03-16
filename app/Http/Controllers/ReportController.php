@@ -1,27 +1,26 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Exports\ProductsReportExport;
+use App\Exports\PurchasesReportExport;
+use App\Exports\SalesReportExport;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Expense;
+use App\Models\Expense as Expend;
 use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\PurchaseDetail;
 use App\Models\PurchasePayment;
 use App\Models\Sale;
-use App\Models\SaleDetail;
 use App\Models\SalePayment;
 use App\Models\SaleReturn;
-use App\Models\Expense as Expend;
+use App\Models\SaleReturnDetail;
 use App\Models\Supplier;
 use Carbon\Carbon;
-use App\Exports\PurchasesReportExport;
-use App\Exports\SalesReportExport;
-use App\Exports\ProductsReportExport;
-use Maatwebsite\Excel\Facades\Excel;
-
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ReportController extends Controller
 {
@@ -71,7 +70,7 @@ class ReportController extends Controller
          + Expend::whereBetween('created_at', [$startDate, $endDate])->sum('amount')
          - PurchasePayment::whereBetween('created_at', [$startDate, $endDate])->sum('amount');
 
-         //ចំណេញសរុប = ចំណូល - ចំណាយ
+        //ចំណេញសរុប = ចំណូល - ចំណាយ
         $grossProfit = $revenue - Purchase::whereBetween('created_at', [$startDate, $endDate])->sum('paid_amount');
 
         $netProfit = $grossProfit - Expend::whereBetween('created_at', [$startDate, $endDate])->sum('amount')
@@ -129,64 +128,21 @@ class ReportController extends Controller
         ]);
     }
 
-    public function SaleReport(Request $request)
-    {
-        $customers = Customer::all();
-        $products  = Product::all();      // If you want to filter by products as well
-        $query     = SaleDetail::query(); // Query SaleDetail instead of Sale
+   
 
-        // Handle Date Range Input
-        if ($request->has('date_range') && $request->date_range) {
-            $dates = explode(' to ', $request->date_range);
-            if (count($dates) == 2) {
-                $start_date = $dates[0];
-                $end_date   = $dates[1];
-
-                $query->whereHas('sale', function ($query) use ($start_date, $end_date) {
-                    $query->whereDate('date', '>=', $start_date)
-                        ->whereDate('date', '<=', $end_date);
-                });
-            }
-        }
-
-        // Filter by Customer
-        if ($request->filled('customer_id')) {
-            $query->whereHas('sale', function ($query) use ($request) {
-                $query->where('customer_id', $request->customer_id);
-            });
-        }
-
-        // Filter by Payment Status
-        if ($request->filled('payment_status')) {
-            $query->whereHas('sale', function ($query) use ($request) {
-                $query->where('payment_status', $request->payment_status);
-            });
-        }
-
-        // Eager load the necessary relationships (sale, customer, product) and paginate results
-        $salesDetails = $query->with(['sale.customer', 'product'])->paginate(10);
-        if ($request->has('export') && $request->export == 'excel') {
-            return Excel::download(new SalesReportExport($query), 'sales_report.xlsx');
-        }
-
-        return view('admin.reports.sales-report', compact('salesDetails', 'customers', 'products'));
-    }
     public function ProductReport(Request $request)
     {
         $categories = Category::all();
         $brands     = Brand::all();
 
-        // Initialize the query builder for products
         $query = Product::query();
 
-        // Filter by date range if both start_date and end_date are provided
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $startDate = Carbon::parse($request->input('start_date'))->startOfDay();
             $endDate   = Carbon::parse($request->input('end_date'))->endOfDay();
             $query->whereBetween('created_at', [$startDate, $endDate]);
         }
 
-        // Filter by category if category_id is provided
         if ($request->filled('category_id')) {
             $query->where('category_id', $request->input('category_id'));
         }
@@ -196,8 +152,7 @@ class ReportController extends Controller
             $query->where('brand_id', $request->input('brand_id'));
         }
 
-        // Execute the query and paginate the results
-        $products = $query->paginate(10);
+        $products = $query->get();
         if ($request->has('export') && $request->export == 'excel') {
             return Excel::download(new ProductsReportExport($query), 'products_report.xlsx');
         }
@@ -229,13 +184,80 @@ class ReportController extends Controller
             });
         }
 
-        // Eager load the necessary relationships
         $purchasesDetails = $query->with(['purchase.supplier', 'product'])->get();
 
         if ($request->has('export') && $request->export == 'excel') {
             return Excel::download(new PurchasesReportExport($query), 'purchases_report.xlsx');
         }
         return view('admin.reports.purchase-report', compact('suppliers', 'products', 'purchasesDetails'));
+    }
+    public function ExpenseReport(Request $request)
+    {
+        $expenses = Expend::query();
+
+        if ($request->filled('date_range')) {
+            $dates = explode(' - ', $request->date_range);
+            if (count($dates) == 2) {
+                $startDate = Carbon::parse($dates[0])->startOfDay();
+                $endDate   = Carbon::parse($dates[1])->endOfDay();
+                $expenses->whereBetween('date', [$startDate, $endDate]);
+            }
+        }
+
+        $expenses = $expenses->orderBy('id', 'desc')->get();
+
+        return view('admin.reports.expense-report', compact('expenses'));
+    }
+    public function SaleReturnReport(Request $request)
+    {
+        $customers = Customer::all();
+        $products  = Product::all();
+        $query     = SaleReturnDetail::query();
+
+        // Handle Date Range Input
+        if ($request->has('date_range') && $request->date_range) {
+            $dates = explode(' to ', $request->date_range);
+            if (count($dates) == 2) {
+                try {
+                    $start_date = Carbon::parse($dates[0])->startOfDay();
+                    $end_date   = Carbon::parse($dates[1])->endOfDay();
+
+                    $query->whereHas('saleReturn', function ($q) use ($start_date, $end_date) {
+                        $q->whereBetween('date', [$start_date, $end_date]);
+                    });
+                } catch (\Exception $e) {
+                    return back()->with('error', 'Invalid date format.');
+                }
+            }
+        }
+
+        // Filter by Customer
+        if ($request->filled('customer_id')) {
+            $query->whereHas('saleReturn', function ($q) use ($request) {
+                $q->where('customer_id', $request->customer_id);
+            });
+        }
+
+        // Filter by Payment Status
+        if ($request->filled('payment_status')) {
+            $query->whereHas('saleReturn', function ($q) use ($request) {
+                $q->where('payment_status', $request->payment_status);
+            });
+        }
+
+        // Fetch Sale Return Details with related models
+        $salesDetails = $query->with(['saleReturn.customer', 'product'])->get();
+
+        // Export to Excel if requested
+        if ($request->has('export') && $request->export == 'excel') {
+            return Excel::download(new SalesReportExport($salesDetails), 'sale_return_report.xlsx');
+        }
+
+        return view('admin.reports.sale_return-report', compact('salesDetails', 'customers', 'products'));
+    }
+    public function PaymentReport(Request $request)
+    {
+
     }
 
 }

@@ -42,7 +42,6 @@
                                                 </th>
                                                 <th>ឈ្មោះ</th>
                                                 <th>ការអនុញ្ញាត</th>
-                                                {{-- <th>ឈ្មោះ guard</th> --}}
                                                 <th>ថ្ងៃ​ ខែ ឆ្នាំ</th>
 
                                                 <th class="text-end">សកម្មភាព</th>
@@ -58,49 +57,37 @@
                                                         </div>
                                                     </td>
                                                     <td>{{ $role->name }}</td>
-                                                    {{-- <td>{{ $role->permissions->pluck('name')->implode(' | ') }}</td> --}}
                                                     <td>
-                                                        <div  style="word-wrap: break-word; white-space: normal; max-width: 100%;">
+                                                        <div
+                                                            style="word-wrap: break-word; white-space: normal; max-width: 100%;">
                                                             {{ $role->permissions->pluck('name')->implode(' | ') }}
                                                         </div>
                                                     </td>
-
-                                                    {{-- <td>
-                                                        @foreach($role->permissions as $permission)
-                                                            <span class="btn btn-sm btn-primary ">{{ $permission->name }}</span>
-                                                        @endforeach
-                                                    </td> --}}
-
-                                                    {{-- <td>{{ $role->guard_name }}</td> --}}
-                                                    <td>{{ \Carbon\Carbon::parse($role->created_at)->format('d-M-y') }}</td>
-
-
-
-
-
-                                                    <td class="text-end">
-                                                        <a href="{{ route('roles.edit', $role->id)}}"
-                                                            class="btn btn-secondary btn-sm"><i
-                                                                class="bi bi-pencil-square"></i></a>
-                                                                <form id="deleteForm{{ $role->id }}"
-                                                                    action="{{ route('roles.destroy', $role->id) }}"
-                                                                    method="POST" style="display:inline;">
-                                                                    @csrf
-                                                                    @method('DELETE')
-                                                                    <button type="button" class="btn btn-danger btn-sm"
-                                                                        onclick="confirmDelete({{ $role->id }})">
-                                                                        <i class="bi bi-trash3"></i>
-                                                                    </button>
-                                                                </form>
-
-
+                                                    <td>{{ \Carbon\Carbon::parse($role->created_at)->translatedFormat('d-M-y') }}
                                                     </td>
-                                                </tr>
+                                                    <td class="text-end">
+                                                        @if ($role->name !== 'Admin')
+                                                            <a href="{{ route('roles.edit', $role->id) }}"
+                                                                class="btn btn-secondary btn-sm">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </a>
+                                                            <form id="deleteForm{{ $role->id }}"
+                                                                action="{{ route('roles.destroy', $role->id) }}"
+                                                                method="POST" style="display:inline;">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="button" class="btn btn-danger btn-sm"
+                                                                    onclick="confirmDelete({{ $role->id }})">
+                                                                    <i class="bi bi-trash3"></i>
+                                                                </button>
+                                                            </form>
+                                                        @endif
+                                                    </td>
 
+                                                </tr>
                                             @endforeach
                                         </tbody>
                                     </table>
-                                    {{-- {{ $permissions->likes() }} --}}
                                 </div>
                             </div>
                         </div>

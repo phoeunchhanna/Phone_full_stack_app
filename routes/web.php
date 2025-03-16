@@ -6,40 +6,41 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ExpenseCategoryController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\PurchasePaymentController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\Report\ProfitAndLossReportController;
+use App\Http\Controllers\Report\PurchasesReportController;
+use App\Http\Controllers\Report\SalesReportController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SalePaymentController;
+use App\Http\Controllers\SaleReturnController;
+use App\Http\Controllers\SaleReturnPaymentController;
+use App\Http\Controllers\SellerDashboardController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\PermissionController;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\ProductsController;
-use App\Http\Controllers\SaleReturnController;
 use Illuminate\Support\Facades\Route;
 
 // Login route
 Route::get('/', function () {
     return view('auth.login');
 })->name('login');
-Route::middleware(['auth', 'user_type:admin'])->group(function () {
-    // Admin User Management
-    Route::resource('users', UserController::class);
+// Route::middleware(['auth', 'user_type:admin'])->group(function () {
+//     // Admin User Management
+//     Route::resource('users', UserController::class);
+//     Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
+//     Route::post('/users/{id}', [UserController::class, 'update'])->name('users.update');
 
-    Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
-    Route::post('/users/{id}', [UserController::class, 'update'])->name('users.update');
-
-});
+// });
 // Authenticated routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/user/home', [HomeController::class, 'userhome'])->name('userhome');
-
-
-    // ========================================================resource==============================================================
+    Route::get('/seller/dashboard', [SellerDashboardController::class, 'index'])->name('seller.dashboard');
 // Category management
     Route::resource('categories', CategoryController::class);
 
@@ -51,7 +52,6 @@ Route::middleware(['auth'])->group(function () {
 
 // Sales management
     Route::resource('sales', SaleController::class);
-
 // Supplier management
     Route::resource('suppliers', SupplierController::class);
 
@@ -103,9 +103,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/sales/cart/updateQuantity', [SaleController::class, 'updateQuantity'])->name('sales.cart.updateQuantity');
     Route::post('/sales/cart/updatediscount', [SaleController::class, 'updatediscount'])->name('sales.cart.updatediscount');
 
-
     //purchase
-    Route::get('/export/purchases', [PurchaseController::class, 'exportPurchasesToExcel'])->name('export.purchases');
     //cart purchase
     Route::post('/purchases/cart/add', [PurchaseController::class, 'add'])->name('purchases.cart.add');
     Route::get('/purchases/cart', [PurchaseController::class, 'show'])->name('purchases.cart.show');
@@ -113,14 +111,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/purchases/cart/delete', [PurchaseController::class, 'delete'])->name('purchases.cart.delete');
     Route::post('/purchases/cart/clear', [PurchaseController::class, 'clear'])->name('purchases.cart.clear');
     Route::post('/purchases/cart/updateQuantity', [PurchaseController::class, 'updateQuantity'])->name('purchases.cart.updateQuantity');
-    //Report
-    Route::get('admin/reports/sales', [ReportController::class, 'SaleReport'])->name('admin.reports.sales');
 
-    Route::get('admin/reports/products', [ReportController::class, 'ProductReport'])->name('admin.reports.product');
-    Route::get('admin/reports/purchases', [ReportController::class, 'PurchaseReport'])->name('admin.purchase.report');
-    Route::get('/profit-loss-report', [ReportController::class, 'ProfitAndLoss'])->name('profit.loss.report');
-
-// ========================================================payment==============================================================
+    //Report management
+    Route::get('reports/sale-return', [ReportController::class, 'SaleReturnReport'])->name('reports.sale-return');
+    Route::get('reports/purchases', [ReportController::class, 'PurchaseReport'])->name('admin.purchase.report');
     //purchase payments
     Route::get('/purchase_payments', [PurchasePaymentController::class, 'index'])->name('purchase_payments.index');
     Route::get('purchase_payments/create/{purchase_id}', [PurchasePaymentController::class, 'create'])->name('purchase_payments.create');
@@ -135,6 +129,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/sale_payments/{sale_id}/edit/{sale_payment}', [SalePaymentController::class, 'edit'])->name('sale_payments.edit');
     Route::put('/sale_payments/{sale_payment}', [SalePaymentController::class, 'update'])->name('sale_payments.update');
     Route::delete('/sale_payments/{sale_payment}', [SalePaymentController::class, 'destroy'])->name('sale_payments.destroy');
+    //Sale Return Payments
+    Route::get('sale_return_payments/', [SaleReturnPaymentController::class, 'index'])->name('sale_return_payments.index');
+    Route::get('sale_return_payments/create/{sale_return_id}', [SaleReturnPaymentController::class, 'create'])->name('sale_return_payments.create');
+    Route::post('sale_return_payments/store', [SaleReturnPaymentController::class, 'store'])->name('sale_return_payments.store');
+    Route::get('sale_return_payments/{sale_return_id}/edit/{saleReturnPayment}', [SaleReturnPaymentController::class, 'edit'])->name('sale_return_payments.edit');
+    Route::put('sale_return_payments/{saleReturnPayment}', [SaleReturnPaymentController::class, 'update'])->name('sale_return_payments.update');
+    Route::delete('sale_return_payments/{saleReturnPayment}', [SaleReturnPaymentController::class, 'destroy'])->name('sale_return_payments.destroy');
 
     Route::get('/persmissions', [PermissionController::class, 'index'])->name('permissions.index');
     Route::get('/persmissions/create', [PermissionController::class, 'create'])->name('permissions.create');
@@ -143,7 +144,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/persmissions/{id}', [PermissionController::class, 'update'])->name('permissions.update');
     Route::delete('/persmissions{id}', [PermissionController::class, 'destroy'])->name('permissions.destroy');
 
-
     Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
     Route::get('/roles/create', [RoleController::class, 'create'])->name('roles.create');
     Route::post('/roles', [RoleController::class, 'store'])->name('roles.store');
@@ -151,45 +151,25 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/roles/{id}', [RoleController::class, 'update'])->name('roles.update');
     Route::delete('/roles/{id}', [RoleController::class, 'destroy'])->name('roles.destroy');
 
-
     Route::get('/permissions/search', [RoleController::class, 'searchpermission'])->name('permissions.search');
-
     Route::get('/permissions/search/edit', [RoleController::class, 'searchpermissionEdit'])->name('permissions.search.edit');
-
     Route::resource('users', UserController::class);
-
     Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::post('/users/{id}', [UserController::class, 'update'])->name('users.update');
 
+    //purchase management
 
-//purchase management
-// Route::get('/sales-returns', [SaleReturnController::class, 'index'])->name('salesreturn.index');
-// Route::get('/sales-returns', [SaleReturnController::class, 'getSaleReturns'])->name('salesreturn.get');
-// Route::get('/sales-return/create', [SaleReturnController::class, 'create'])->name('salesreturn.create');
-// Route::post('/sales-return', [SaleReturnController::class, 'store'])->name('salesreturn.store');
+    Route::get('/carts', [SaleReturnController::class, 'getCarts'])->name('sale-returns.cart.items');
+    Route::delete('/cart/delete', [SaleReturnController::class, 'delete'])->name('sale-returns.cart.delete');
+    Route::post('/sale-returns/store', [SaleReturnController::class, 'store'])->name('salereturns.store');
+    Route::get('/sale-returns', [SaleReturnController::class, 'index'])->name('salereturns.index');
 
-
-
-// Route::get('/sales-return/{id}/edit', [SaleReturnController::class, 'edit'])->name('salesreturn.edit');
-// Route::put('/sales-return/{id}', [SaleReturnController::class, 'update'])->name('salesreturn.update');
-// Route::delete('/sales-return/{id}', [SaleReturnController::class, 'destroy'])->name('salesreturn.destroy');
-// Route::delete('/sales-return/carts/{cartsalereturn}', [SaleReturnController::class, 'destroycart'])->name('salesreturn.destroycart');
-// Route::put('/sales-return/carts/{cart}', [SaleReturnController::class, 'updatecart'])->name('updatecart.update');
-// Route::post('/sales-return/barcode', [SaleReturnController::class, 'barcodescan'])->name('salesreturn.barcode');
-// Route::post('/sales-return/search', [SaleReturnController::class, 'search'])->name('salesreturn.search');
-
-
-Route::get('/carts', [SaleReturnController::class, 'getCarts'])->name('sale-returns.cart.items');
-Route::delete('/cart/delete', [SaleReturnController::class, 'delete'])->name('sale-returns.cart.delete');
-Route::post('/sale-returns/store', [SaleReturnController::class, 'store'])->name('salereturns.store');
-Route::get('/sale-returns', [SaleReturnController::class, 'index'])->name('salereturns.index');
-
-Route::get('/sale_return_payments', [PurchasePaymentController::class, 'index'])->name('sale_return_payments.index');
-Route::get('sale_return_payments/create/{purchase_id}', [PurchasePaymentController::class, 'create'])->name('sale_return_payments.create');
-Route::post('/sale_return_payments', [PurchasePaymentController::class, 'store'])->name('sale_return_payments.store');
-Route::get('/sale_return_payments/{purchase_id}/edit/{purchase_payment}', [PurchasePaymentController::class, 'edit'])->name('sale_return_payments.edit');
-Route::put('/sale_return_payments/{purchase_payment}', [PurchasePaymentController::class, 'update'])->name('sale_return_payments.update');
-Route::delete('/sale_return_payments/{purchase_payment}', [PurchasePaymentController::class, 'destroy'])->name('sale_return_payments.destroy');
+    Route::get('/sale-return-payments', [SaleReturnPaymentController::class, 'index'])->name('sale_return_payments.index');
+    Route::get('/sale-return-payments/create/{sale_return_id}', [SaleReturnPaymentController::class, 'create'])->name('sale_return_payments.create');
+    Route::post('/sale-return-payments/store', [SaleReturnPaymentController::class, 'store'])->name('sale_return_payments.store');
+    Route::get('/sale-return-payments/{sale_return_id}/edit/{saleReturnPayment}', [SaleReturnPaymentController::class, 'edit'])->name('sale_return_payments.edit');
+    Route::put('/sale-return-payments/update/{saleReturnPayment}', [SaleReturnPaymentController::class, 'update'])->name('sale_return_payments.update');
+    Route::delete('/sale-return-payments/{saleReturnPayment}', [SaleReturnPaymentController::class, 'destroy'])->name('sale_return_payments.destroy');
 
 // Route::post('/purchases/cart/add', [PurchaseController::class, 'add'])->name('purchases.cart.add');
 // Route::get('/purchases/cart', [PurchaseController::class, 'show'])->name('purchases.cart.show');
@@ -198,17 +178,28 @@ Route::delete('/sale_return_payments/{purchase_payment}', [PurchasePaymentContro
 // Route::post('/purchases/cart/clear', [PurchaseController::class, 'clear'])->name('purchases.cart.clear');
 // Route::post('/purchases/cart/updateQuantity', [PurchaseController::class, 'updateQuantity'])->name('purchases.cart.updateQuantity');
 
-Route::get('/sale-return/invoice/{saleReturnId}', [SaleReturnController::class, 'showSaleReturnInvoice'])->name('sale-return.invoice');
-
-Route::get('/sale-returns/reference', [SaleReturnController::class, 'showReferenceForm'])->name('sale_returns.reference');
-Route::resource('sale-returns', SaleReturnController::class);
-Route::post('sale-returns/getSaleDetails', [SaleReturnController::class, 'getSaleDetails'])->name('sale_returns.getSaleDetails');
-Route::get('/sale-returns/cart/items', [SaleReturnController::class, 'getCarts'])->name('sale_returns.cart.items');
-Route::post('/sale-returns/cart/updateQuantity', [SaleReturnController::class, 'updateQuantity'])->name('sale_returns.cart.updateQuantity');
-
-
-Route::get('products-report/export', [ReportController::class, 'ProductReport'])->name('products-report.export');
-Route::get('purchases-report/export', [ReportController::class, 'PurchaseReport'])->name('purchases-report.export');
-Route::get('sales-report/export', [ReportController::class, 'SaleReport'])->name('sales-report.export');  
+    Route::get('/sale-return/invoice/{saleReturnId}', [SaleReturnController::class, 'showSaleReturnInvoice'])->name('sale-return.invoice');
+    Route::get('/sale-returns/invoice/{id}', [SaleReturnController::class, 'getInvoice']);
+    // Route::get('/sale-returns/reference', [SaleReturnController::class, 'showReferenceForm'])->name('sale_returns.reference');
+    Route::resource('sale-returns', SaleReturnController::class);
+    Route::post('sale-returns/getSaleDetails', [SaleReturnController::class, 'getSaleDetails'])->name('sale_returns.getSaleDetails');
+    Route::get('/sale-returns/cart/items', [SaleReturnController::class, 'getCarts'])->name('sale_returns.cart.items');
+    Route::post('/sale-returns/cart/updateQuantity', [SaleReturnController::class, 'updateQuantity'])->name('sale_returns.cart.updateQuantity');
+    //Sale Report management
+    Route::get('/sales-report', [SalesReportController::class, 'index'])->name('sales.report.index');
+    Route::get('/sales-report/print', [SalesReportController::class, 'printReport'])->name('sales.report.print');
+    Route::post('/sales-report/filter', [SalesReportController::class, 'SaleReport'])->name('sales.report.filter');
+    Route::get('/sales-report/export', [SalesReportController::class, 'exportReport'])->name('sales.report.export');
+    //Purchase Report management
+    Route::get('/purchases-report', [PurchasesReportController::class, 'index'])->name('purchases.report.index');
+    Route::get('/purchases-report/print', [PurchasesReportController::class, 'printReport'])->name('purchases.report.print');
+    Route::post('/purchases-report/filter', [PurchasesReportController::class, 'PurchaseReport'])->name('purchases.report.filter');
+    Route::get('/purchases-report/export', [PurchasesReportController::class, 'exportReport'])->name('purchases.report.export');
+    //Expense Report management
+    Route::get('/reports/profit-loss', [ProfitAndLossReportController::class, 'profitLoss'])->name('reports.profit-loss');
 });
 Auth::routes();
+// Seller Routes
+// Route::middleware(['auth', 'role:seller'])->group(function () {
+//     Route::get('/seller/dashboard', [SellerDashboardController::class, 'index'])->name('seller.dashboard');
+// });

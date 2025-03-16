@@ -17,7 +17,6 @@ class Product extends Model
         'stock_alert',
         'description',
         'image',
-        'status',
         'condition',
         'category_id',
         'brand_id',

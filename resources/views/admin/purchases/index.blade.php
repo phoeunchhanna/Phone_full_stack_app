@@ -28,13 +28,14 @@
                                         </h3>
                                         <div class="col-auto text-end float-end ms-auto download-grp">
                                             @can('ទាញយកទិន្នន័យការបញ្ជាទិញ')
-                                            <a href="{{ route('export.purchases') }}" class="btn btn-outline-primary me-2"><i
-                                                class="fas fa-download"></i> ទាញយកទិន្នន័យ</a>
+                                                {{-- <a href="{{ route('export.purchases') }}"
+                                                    class="btn btn-outline-primary me-2"><i class="fas fa-download"></i>
+                                                    ទាញយកទិន្នន័យ</a> --}}
                                             @endcan
 
                                             @can('បង្កើតការបញ្ជាទិញ')
-                                            <a href="{{ route('purchases.create') }}" class="btn btn-primary"><i
-                                                class="fas fa-plus"></i> បន្ថែម</a>
+                                                <a href="{{ route('purchases.create') }}" class="btn btn-primary"><i
+                                                        class="fas fa-plus"></i> បន្ថែម</a>
                                             @endcan
 
                                         </div>
@@ -45,9 +46,11 @@
                                         <thead>
                                             <tr>
                                                 <th>
-                                                    <div class="form-check check-tables">
-                                                        <input class="form-check-input" type="checkbox" value="something">
-                                                    </div>
+                                                    <label class="form-check-label">
+                                                        <input id="checkbox1" class="form-check-input" type="checkbox"
+                                                            value="something" title="Check this option for something">
+
+                                                    </label>
                                                 </th>
                                                 <th class="text-center">កាលបរិច្ឆេទ</th>
                                                 <th class="text-start">លេខយោង</th>
@@ -64,12 +67,14 @@
                                             @foreach ($purchases as $purchase)
                                                 <tr>
                                                     <td>
-                                                        <div class="form-check check-tables">
-                                                            <input class="form-check-input" type="checkbox"
-                                                                value="something">
-                                                        </div>
+                                                        <label class="form-check-label">
+                                                            <input id="checkbox1" class="form-check-input" type="checkbox"
+                                                                value="something" title="Check this option for something">
+
+                                                        </label>
                                                     </td>
-                                                    <td>{{ \Carbon\Carbon::parse($purchase->date)->translatedFormat('d-F-Y') }}</td>
+                                                    <td>{{ \Carbon\Carbon::parse($purchase->date)->translatedFormat('d-F-Y') }}
+                                                    </td>
                                                     <td class="text-primary">{{ $purchase->reference }}
                                                     </td>
                                                     <td>{{ $purchase->supplier->name }}</td>
@@ -110,27 +115,27 @@
 
                                                                 <!-- Edit Sale -->
                                                                 @can('កែប្រែការបញ្ជាទិញ')
-                                                                <a class="dropdown-item text-warning "
-                                                                    href="{{ route('purchases.edit', $purchase->id) }}">
-                                                                    <i class="bi bi-pencil-square me-2"></i> កែរប្រែ
-                                                                </a>
+                                                                    <a class="dropdown-item text-warning "
+                                                                        href="{{ route('purchases.edit', $purchase->id) }}">
+                                                                        <i class="bi bi-pencil-square me-2"></i> កែរប្រែ
+                                                                    </a>
                                                                 @endcan
 
                                                                 <!-- Delete Sale (only if completed) -->
                                                                 @can('លុបការបញ្ជាទិញ')
-                                                                @if ($purchase->status == 'បញ្ចប់')
-                                                                    <form
-                                                                        action="{{ route('purchases.destroy', $purchase) }}"
-                                                                        method="POST" id="deleteForm{{ $purchase->id }}">
-                                                                        @csrf
-                                                                        @method('DELETE')
-                                                                        <button type="button"
-                                                                            class="dropdown-item text-danger"
-                                                                            onclick="confirmDelete({{ $purchase->id }})">
-                                                                            <i class="bi bi-trash3 me-2"></i> លុប
-                                                                        </button>
-                                                                    </form>
-                                                                @endif
+                                                                    {{-- @if ($purchase->status == 'បញ្ចប់') --}}
+                                                                        <form
+                                                                            action="{{ route('purchases.destroy', $purchase) }}"
+                                                                            method="POST" id="deleteForm{{ $purchase->id }}">
+                                                                            @csrf
+                                                                            @method('DELETE')
+                                                                            <button type="button"
+                                                                                class="dropdown-item text-danger"
+                                                                                onclick="confirmDelete({{ $purchase->id }})">
+                                                                                <i class="bi bi-trash3 me-2"></i> លុប
+                                                                            </button>
+                                                                        </form>
+                                                                    {{-- @endif --}}
                                                                 @endcan
 
 

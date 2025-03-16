@@ -15,7 +15,7 @@
                     </div>
                 </div>
                 <div>
-                    <img src="{{ asset($product->image) }}" class="card-img-top" alt="${product.name}"
+                    <img src="{{ asset('storage/' .$product->image) }}" class="card-img-top" alt="${product.name}"
                         style="width: 120px; height: 120px; object-fit: cover;" />
                 </div>
                 <div class="card-body d-flex flex-column justify-content-center" style="padding: 10px;">

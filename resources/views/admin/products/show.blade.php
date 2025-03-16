@@ -31,43 +31,24 @@
                             </span>
                         </div>
                     </div>
-                    <div class="invoice-item invoice-item-bg">
-
-                        <div class="row">
-                            <div class="col-lg-4 col-md-12">
-                                <div class="invoice-info invoice-info-one border-1">
-                                    <strong class="customer-text-one">លក់ជូន៖</strong>
-                                    <p>ឈ្មោះផលិតផល: {{ $product->name }}</p>
-                                    <p>ប្រភេទផលិតផល: {{ $product->category->name }}</p>
-                                    <p>ប្រភេទម៉ាកយីហោ: {{ $product->brand->name }}</p>
-                                    <p>លក្ខណៈ: {{ $product->condition }}</p>
-                                </div>
-                            </div>
-                            <div class="col-lg-4 col-md-12">
-                                <div class="invoice-info invoice-info-one border-1">
-                                    <p>ស្ថានភាព: {{ $product->status }}</p>
-                                </div>
-                            </div>
-                            <div class="col-lg-4 col-md-12">
-                                <div class="invoice-info invoice-info-one border-0">
-                                    <fieldset class="border p-3 rounded-2">
-                                        <div class="form-group text-center">
-                                            <label for="image" style="color:white">រូបភាពផលិតផល</label>
-                                            <img style="width: 145px; height: 145px;"
-                                                class="d-block mx-auto img-thumbnail img-fluid mb-2"
-                                                src="{{ asset($product->image) }}" alt="រូបភាពផលិតផល {{ $product->name }}">
-                                        </div>
-                                        @if ($product->description)
-                                            <div class="col-12 col-sm-12">
-                                                <div class="mb-3">
-                                                    <label for="description text-light" style="color:white" class="form-label">ការពិពណ៌នា</label>
-                                                    <p class="form-control-static" >{{ $product->description }}</p>
-                                                </div>
-                                            </div>
-                                        @endif
-                                    </fieldset>
-                                </div>
-                            </div>
+                    <div class="row">
+                        <!-- Product Image -->
+                        <div class="col-md-4 text-center">
+                            <img src="{{ asset('storage/' . $stock->product->image) }}" alt="{{ $product->name }}" 
+                                class="img-fluid img-thumbnail rounded" 
+                                style="max-width: 200px; height: auto;">
+                        </div>
+            
+                        <!-- Product Details -->
+                        <div class="col-md-8">
+                            <h3 class="text-primary">{{ $product->name }}</h3>
+                            <p><strong>ប្រភេទផលិតផល:</strong> {{ $product->category->name }}</p>
+                            <p><strong>ម៉ាកយីហោ:</strong> {{ $product->brand->name }}</p>
+                            <p><strong>លក្ខណៈ:</strong> {{ $product->condition }}</p>
+                            <p class="mt-3">
+                                <strong>ការពិពណ៌នា:</strong> <br>
+                                <span class="text-muted">{{ $product->description }}</span>
+                            </p>
                         </div>
                     </div>
                     <div class="table-responsive">
@@ -93,5 +74,5 @@
                 </div>
             </div>
         </div>
-    </div>
-@endsection
+        </div>
+    @endsection

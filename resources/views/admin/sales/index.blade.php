@@ -30,11 +30,12 @@
                                         <div class="col-auto text-end float-end ms-auto download-grp">
                                             <a href="{{ route('export.sales') }}" class="btn btn-outline-primary me-2"><i
                                                     class="fas fa-download"></i> ទាញយកទិន្នន័យ</a>
-                                            <a href="{{ route('pos.index') }}" class="btn btn-outline-primary me-2"><i
-                                                    class="bi bi-grid"></i> ផ្ទាំងPOS</a>
                                             @can('បង្កើតការលក់')
                                             <a href="{{ route('sales.create') }}" class="btn btn-primary"><i
                                                 class="fas fa-plus"></i> បន្ថែម</a>
+                                            @endcan
+                                            @can('បង្កើតការបង្វិលទំនិញចូល')
+                                            
                                             @endcan
 
                                         </div>
@@ -159,6 +160,41 @@
             </div>
         </div>
     </div>
+    <!-- Invoice Modal -->
+<div class="modal fade" id="invoiceModal" tabindex="-1" aria-labelledby="invoiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="invoiceModalLabel">🧾 Invoice: <span id="invoiceReference"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>📅 Date:</strong> <span id="invoiceDate"></span></p>
+                <p><strong>👤 Customer:</strong> <span id="invoiceCustomer"></span></p>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>ឈ្មោះផលិតផល</th>
+                            <th>ចំនួន</th>
+                            <th>តម្លៃ ($)</th>
+                            <th>សរុប ($)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoiceDetails"></tbody>
+                </table>
+                <p><strong>💰 Total Amount:</strong> $<span id="invoiceTotal"></span></p>
+                <p><strong>🔻 Discount:</strong> $<span id="invoiceDiscount"></span></p>
+                <p><strong>💵 Paid:</strong> $<span id="invoicePaid"></span></p>
+                <p><strong>🧾 Due:</strong> $<span id="invoiceDue"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button onclick="printInvoice()" class="btn btn-primary">🖨️ Print</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">❌ Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
     <script>
         function confirmDelete(postId) {
             Swal.fire({

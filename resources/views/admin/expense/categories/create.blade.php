@@ -51,11 +51,19 @@
                                         <textarea name="description" class="form-control" value="គ្មាន"></textarea>
                                     </div>
                                 </div>
-                                <div class="mt-3">
-                                    <button type="submit" class="btn btn-primary" id="createpurchase">
-                                        បន្ថែម<i class="bi bi-check"></i>
-                                    </button>
+                                <div class="mt-3 d-flex justify-content-end">
+                                    <div class="form-group mt-4">
+                                        <button type="submit" class="btn btn-primary btn-lg" id="saveButton">រក្សាទុក<i
+                                                class="bi bi-check-lg"></i></button>
+                                        <button class="btn btn-primary btn-lg" type="button" disabled=""
+                                            id="savingButton" style="display: none;">
+                                            <span class="spinner-border spinner-border-sm me-1" role="status"
+                                                aria-hidden="true"></span>
+                                            កំពុងរក្សាទុក...
+                                        </button>
+                                    </div>
                                 </div>
+                            </div>
                             </form>
                         </div>
                     </div>
@@ -63,4 +71,14 @@
             </div>
         </div>
     </div>
+    <script>
+        document.getElementById('formcreate').addEventListener('submit', function(event) {
+            event.preventDefault();
+            document.getElementById('saveButton').style.display = 'none';
+            document.getElementById('savingButton').style.display = 'inline-block';
+            setTimeout(() => {
+                document.getElementById('formcreate').submit();
+            }, 500);
+        });
+    </script>
 @endsection

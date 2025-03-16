@@ -18,13 +18,13 @@ return new class extends Migration
             $table->date('date');
             $table->string('reference')->unique();
             $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade');
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('sale_id')->constrained('sales')->onDelete('cascade');
             $table->decimal('total_amount', 10, 2);
             $table->decimal('discount', 10, 2)->default(0);
-            $table->decimal('paid_amount', 10, 2);
-            $table->decimal('due_amount', 10, 2);
+            $table->decimal('paid_amount', 10, 2)->default(0);
+            $table->decimal('due_amount', 10, 2)->default(0);
             $table->string('status');
-            $table->string('payment_method');
+            $table->string('payment_method')->nullable();
             $table->string('payment_status');
             $table->text('reason')->nullable();
             $table->timestamps();

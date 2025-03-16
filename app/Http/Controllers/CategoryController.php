@@ -3,67 +3,23 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Validation\Rule;
 
 class CategoryController extends Controller
 {
-    // implements HasMiddleware
-    // public static function middleware(): array{
-    //     return [
-    //         new Middleware('permission:បញ្ជីប្រភេទផលិតផល', only: [index]),
-    //         new Middleware('permission:កែប្រែប្រភេទផលិតផល', only: [edit]),
-    //         new Middleware('permission:បង្កើតភេទផលិតផល', only: [create]),
-    //         new Middleware('permission:លុបប្រភេទផលិតផល', only: [destroy]),
-    //     ];
-    // }
-
-    // public function __construct()
-    // {
-    //     $this->middleware(function ($request, $next) {
-    //         if (!auth()->user()->can('បញ្ជីប្រភេទផលិតផល')) {
-    //             return redirect()->route('categories.index')->with('error', 'អ្នកមិនមានសិទ្ធិចូលប្រើទំព័រនេះទេ!');
-    //         }
-    //         return $next($request);
-    //     })->only(['index']);
-
-    //     $this->middleware(function ($request, $next) {
-    //         if (!auth()->user()->can('បង្កើតប្រភេទផលិតផល')) {
-    //             return redirect()->route('categories.index')->with('error', 'អ្នកមិនមានសិទ្ធិចូលប្រើទំព័រនេះទេ!');
-    //         }
-    //         return $next($request);
-    //     })->only(['create']);
-
-    //     $this->middleware(function ($request, $next) {
-    //         if (!auth()->user()->can('កែប្រែប្រភេទផលិតផល')) {
-    //             return redirect()->route('categories.index')->with('error', 'អ្នកមិនមានសិទ្ធិចូលប្រើទំព័រនេះទេ!');
-    //         }
-    //         return $next($request);
-    //     })->only(['edit']);
-
-    //     $this->middleware(function ($request, $next) {
-    //         if (!auth()->user()->can('លុបប្រភេទផលិតផល')) {
-    //             return redirect()->route('categories.index')->with('error', 'អ្នកមិនមានសិទ្ធិចូលប្រើទំព័រនេះទេ!');
-    //         }
-    //         return $next($request);
-    //     })->only(['destroy']);
-    // }
-
-
-
     public function __construct()
     {
         $permissions = [
-            'index' => 'បញ្ជីប្រភេទផលិតផល',
-            'create' => 'បង្កើតប្រភេទផលិតផល',
-            'edit' => 'កែប្រែប្រភេទផលិតផល',
+            'index'   => 'បញ្ជីប្រភេទផលិតផល',
+            'create'  => 'បង្កើតប្រភេទផលិតផល',
+            'edit'    => 'កែប្រែប្រភេទផលិតផល',
             'destroy' => 'លុបប្រភេទផលិតផល',
         ];
 
         foreach ($permissions as $method => $permission) {
             $this->middleware(function ($request, $next) use ($permission) {
-                if (!auth()->user()->can($permission)) {
+                if (! auth()->user()->can($permission)) {
                     return back()->with('error', 'អ្នកមិនមានសិទ្ធិចូលប្រើទំព័រនេះទេ!');
                 }
                 return $next($request);
@@ -71,11 +27,9 @@ class CategoryController extends Controller
         }
     }
 
-
-
     public function index()
     {
-        $categories = Category::all();
+        $categories = Category::orderBy('created_at', 'desc')->get(); // Show newest first
         return view('admin.categories.index', compact('categories'));
     }
 
@@ -119,7 +73,7 @@ class CategoryController extends Controller
                 Rule::unique('categories')->ignore($category->id),
             ],
             'description' => 'nullable|string|max:255',
-        ],[
+        ], [
             'name.unique' => 'ម៉ាកយីហោនេះមានរួចហើយ។',
         ]);
 

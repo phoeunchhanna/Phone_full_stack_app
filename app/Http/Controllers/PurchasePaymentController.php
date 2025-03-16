@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\Purchase;
 use App\Models\PurchasePayment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PurchasePaymentController extends Controller
 {
@@ -11,22 +12,21 @@ class PurchasePaymentController extends Controller
     public function __construct()
     {
         $permissions = [
-            'index' => 'បញ្ជីការទូទាត់ការបញ្ជាទិញ',
-            'edit' => 'កែប្រែការទូទាត់ការបញ្ជាទិញ',
+            'index'   => 'បញ្ជីការទូទាត់ការបញ្ជាទិញ',
+            'edit'    => 'កែប្រែការទូទាត់ការបញ្ជាទិញ',
             'destroy' => 'លុបការទូទាត់ការបញ្ជាទិញ',
 
         ];
 
         foreach ($permissions as $method => $permission) {
             $this->middleware(function ($request, $next) use ($permission) {
-                if (!auth()->user()->can($permission)) {
+                if (! auth()->user()->can($permission)) {
                     return back()->with('error', 'អ្នកមិនមានសិទ្ធិចូលប្រើទំព័រនេះទេ!');
                 }
                 return $next($request);
             })->only($method);
         }
     }
-
 
     public function index()
     {
@@ -55,7 +55,7 @@ class PurchasePaymentController extends Controller
             'date'           => $request->date,
             'reference'      => $request->reference,
             'amount'         => $request->amount,
-            'note'           => $request->note ?? 'គ្មាន',
+            'note'           => $request->note ?? 'N/A',	
             'payment_method' => $request->payment_method,
         ]);
 
@@ -88,7 +88,6 @@ class PurchasePaymentController extends Controller
 
     public function update(Request $request, PurchasePayment $PurchasePayment)
     {
-        // Validation rules
         $request->validate([
             'amount'         => 'required|numeric|min:0',
             'date'           => 'required|date',
@@ -98,39 +97,44 @@ class PurchasePaymentController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $PurchasePayment) {
-            $Purchase = $PurchasePayment->Purchase;
+            $Purchase = $PurchasePayment->purchase;
 
-            // Calculate due amount after payment
-            $due_amount = ($Purchase->due_amount + $PurchasePayment->amount) - $request->amount;
-
-            // Determine payment status based on due amount
-            if ($due_amount == $Purchase->total_amount) {
-                $payment_status = 'មិនទាន់ទូទាត់';
-            } elseif ($due_amount > 0) {
-                $payment_status = 'បានទូទាត់ខ្លះ';
-            } else {
-                $payment_status = 'បានទូទាត់រួច';
+            if (! $Purchase) {
+                throw new \Exception('Purchase record not found.');
             }
 
-            // Update the Purchase details
+            $previousAmount = $PurchasePayment->amount;
+            $newPaidAmount  = ($Purchase->paid_amount - $previousAmount) + $request->amount;
+            $newDueAmount   = $Purchase->total_amount - $Purchase->discount - $newPaidAmount;
+
+            if ($newDueAmount < 0) {
+                throw new \Exception('Payment amount exceeds remaining due amount.');
+            }
+
+            if ($newDueAmount == 0) {
+                $payment_status = 'បានទូទាត់រួច';
+            } elseif ($newPaidAmount > 0) {
+                $payment_status = 'បានទូទាត់ខ្លះ';
+            } else {
+                $payment_status = 'មិនទាន់ទូទាត់';
+            }
+
             $Purchase->update([
-                'paid_amount'    => (($Purchase->paid_amount - $PurchasePayment->amount) + $request->amount),
-                'due_amount'     => $due_amount,
+                'paid_amount'    => $newPaidAmount,
+                'due_amount'     => max(0, $newDueAmount),
                 'payment_status' => $payment_status,
             ]);
 
-            // Update the Purchase payment details
             $PurchasePayment->update([
                 'date'           => $request->date,
                 'reference'      => $request->reference,
                 'amount'         => $request->amount,
-                'note'           => $request->note,
-                'purchase_id'    => $request->Purchase_id,
+                'note'           => $request->note ?? 'N/A',
                 'payment_method' => $request->payment_method,
             ]);
         });
 
-        return redirect()->route('Purchase_payments.index')->with('success', 'ទិន្នន័យត្រូវបានកែប្រែដោយជោគជ័យ.');
+        return redirect()->route('purchases.index')->with('success', 'ការទូទាត់ត្រូវបានកែប្រែដោយជោគជ័យ។');
     }
 
     public function destroy(PurchasePayment $PurchasePayment)

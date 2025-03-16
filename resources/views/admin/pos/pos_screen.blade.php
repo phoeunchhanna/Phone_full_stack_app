@@ -493,7 +493,7 @@
                                                 </div>
                                             </div>
                                             <div>
-                                                ${product.image ? `<img src="${product.image}" class="card-img-top" alt="${product.name}" style="width: 120px; height: 120px; object-fit: cover;" />` : ''}
+                                                ${product.image ? `<img src="/storage/${product.image}" class="card-img-top" alt="${product.name}" style="width: 120px; height: 120px; object-fit: cover;" />` : ''}
                                             </div>
                                             <div class="card-body d-flex flex-column justify-content-center" style="padding: 10px;">
                                                 <h5 class="card-title text-truncate" style="font-size: 14px;">${product.name}</h5>
@@ -522,70 +522,6 @@
                 $('.category-button').removeClass('btn-warning').addClass('btn-primary');
                 $(this).removeClass('btn-primary').addClass('btn-warning');
             });
-            //     $(document).on('change', '#showCount', function() {
-            //         const showCount = $('#showCount').val();
-
-            //         $.ajaxSetup({
-            //             headers: {
-            //                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            //             }
-            //         });
-
-            //         $.ajax({
-            //             type: 'post',
-            //             url: '{{ route('filter.products') }}', // Use Laravel route helper
-            //             data: {
-            //                 showCount
-            //             },
-            //             dataType: 'json',
-            //             success: function(response) {
-            //                 $('#show').html("");
-            //                 if (response.length > 0) {
-            //                     $.each(response, function(key, product) {
-            //                         $('#show').append(`
-        //        <div class="col">
-        //            <button type="button" class="item custom-btn fs-7 px-1 w-100"
-        //                    id="addToCartBtn"
-        //                    style="cursor: pointer; border: none; background: transparent;"
-        //                    value="${product.id}">
-        //                <div class="order-product product-search d-flex justify-content-center align-items-center">
-        //                    <div class="card border shadow-sm rounded mb-2"
-        //                         style="height: 100%; width: 100%;">
-        //                        <div class="first"
-        //                             style="position: absolute;width: 100%;padding-left: 4px;padding-top: 0px;">
-        //                            <div class="d-flex justify-content-between align-items-center">
-        //                                <span class="discount"
-        //                                      style="background-color: #3d5ee1;padding: 1px 5px;font-size: 10px;border-radius: 4px;color: #fff;">
-        //                                    ${product.quantity}</span>
-        //                                <span class="wishlist"><i class="fa fa-heart-o"></i></span>
-        //                            </div>
-        //                        </div>
-        //                        <div style="height: 150px; width: 100%; overflow: hidden;">
-        //                            ${product.image ? `<img src="${product.image}" class="card-img-top" alt="${product.name}" style="object-fit: cover; height: 100%; width: 100%;" />` : ''}
-        //                        </div>
-        //                        <div class="card-body d-flex flex-column justify-content-center" style="padding: 10px;">
-        //                            <h5 class="card-title text-truncate text-start" style="font-size: 14px;">${product.name}</h5>
-        //                            <h5 class="card-title text-truncate text-start" style="font-size: 14px;">
-        //                                ${formatPrice(product.selling_price * 4000)}៛
-        //                            </h5>
-        //                            <h5 class="card-title text-truncate text-start" style="font-size: 14px; color: #3d5ee1;">
-        //                                ${product.selling_price}$
-        //                            </h5>
-        //                        </div>
-        //                    </div>
-        //                </div>
-        //            </button>
-        //        </div>
-        //    `);
-            //                     });
-            //                 } else {
-            //                     $('#show').append(
-            //                         '<p class="text-danger">No products found in this category.</p>'
-            //                     );
-            //                 }
-            //             }
-            //         });
-            //     });
         });
     </script>
 

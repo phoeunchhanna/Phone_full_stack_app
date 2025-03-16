@@ -1,12 +1,8 @@
-<!-- resources/views/errors/419.blade.php -->
-@extends('layouts.app')
-
-@section('title', 'Page Expired')
+@extends('layouts.error')
 
 @section('content')
-    <div class="error-page">
-        <h1>419 - Page Expired</h1>
-        <p>Your session has expired. Please try again.</p>
-        <a href="{{ url('/') }}" class="btn btn-primary">Go to Home</a>
-    </div>
+<img src="{{ asset('images/500.png') }}" alt="500 Internal Error">
+<h1 class="text-danger mt-3">500 - មានបញ្ហាក្នុងប្រព័ន្ធ</h1>
+<p class="text-muted">សូមព្យាយាមម្តងទៀត ឬទាក់ទងអ្នកគ្រប់គ្រង។</p>
+<a href="{{ route('home') }}" class="btn btn-primary">ទៅទំព័រដើម</a>
 @endsection

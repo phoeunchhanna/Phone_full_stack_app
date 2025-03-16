@@ -26,17 +26,22 @@
                                         <h3 class="text-primary font-weight-600">បញ្ជីប្រភេទផលិតផល</h3>
                                         <div class="col-auto text-end float-end ms-auto download-grp">
                                             @can('ទាញយកទិន្នន័យផលិតផល')
-                                            <a href="{{ route('export-products-excel') }}"
-                                                class="btn btn-outline-primary me-2"><i class="fas fa-download"></i>
-                                                ទាញយកទិន្នន័យ</a>
-                                                @endcan
+                                                <a href="{{ route('export-products-excel') }}"
+                                                    class="btn btn-outline-primary me-2"><i class="fas fa-download"></i>
+                                                    ទាញយកទិន្នន័យ</a>
+                                            @endcan
 
                                             @can('បង្កើតផលិតផល')
-                                            <a href="{{ route('products.create') }}" class="btn btn-primary">បន្ថែម <i
-                                                class="fas fa-plus"></i></a>
+                                                <a href="{{ route('products.create') }}" class="btn btn-primary">បន្ថែម <i
+                                                        class="fas fa-plus"></i></a>
                                             @endcan
 
                                         </div>
+                                    </div>
+                                </div>
+                                <div id="loading-spinner" class="text-center" style="display: none;">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="sr-only">Loading...</span>
                                     </div>
                                 </div>
                                 <div class="table-responsive">
@@ -45,9 +50,11 @@
                                         <thead>
                                             <tr>
                                                 <th>
-                                                    <div class="form-check check-tables">
-                                                        <input class="form-check-input" type="checkbox" value="something">
-                                                    </div>
+                                                    <label class="form-check-label">
+                                                        <input id="checkbox1" class="form-check-input" type="checkbox"
+                                                            value="something" title="Check this option for something">
+
+                                                    </label>
                                                 </th>
                                                 <th>រូបភាពផលិតផល</th>
                                                 <th>ឈ្មោះផលិតផល</th>
@@ -67,18 +74,21 @@
                                                 <tr>
                                                     <td>
                                                         <div class="form-check check-tables">
-                                                            <input class="form-check-input" type="checkbox" value="something">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                value="something">
                                                         </div>
                                                     </td>
                                                     <td>
-                                                        <img src="{{ asset($stock->product->image) }}"
-                                                        style="width: 60px; height:60px;" alt="Img"
-                                                        class="img-fluid" />
+                                                        <img src="{{ asset('storage/' . $stock->product->image) }}"
+                                                            style="width: 60px; height:60px;" alt="Image"
+                                                            class="img-fluid" />
                                                     </td>
+                                                    {{-- <img src="default.png" alt="Default Image"> --}}
                                                     <td>{{ $stock->product->name }}</td>
                                                     <td>{{ $stock->product->code }}</td>
                                                     <td>{{ number_format($stock->product->cost_price, 0, '.', ',') }}$</td>
-                                                    <td>{{ number_format($stock->product->selling_price, 0, '.', ',') }}$</td>
+                                                    <td>{{ number_format($stock->product->selling_price, 0, '.', ',') }}$
+                                                    </td>
                                                     <td>{{ $stock->current }}</td>
                                                     <td>{{ $stock->product->category->name ?? 'N/A' }} </td>
                                                     <td>{{ $stock->product->brand->name ?? 'N/A' }}</td>
@@ -100,32 +110,31 @@
 
                                                                 <!-- Edit Sale -->
                                                                 @can('កែប្រែផលិតផល')
-                                                                <a class="dropdown-item text-warning "
-                                                                    href="{{ route('products.edit', $stock->product) }}">
-                                                                    <i class="bi bi-pencil-square me-2"></i> កែរប្រែ
-                                                                </a>
+                                                                    <a class="dropdown-item text-warning "
+                                                                        href="{{ route('products.edit', $stock->product) }}">
+                                                                        <i class="bi bi-pencil-square me-2"></i> កែរប្រែ
+                                                                    </a>
                                                                 @endcan
 
                                                                 <!-- Delete Sale (only if completed) -->
                                                                 @can('លុបផលិតផល')
-                                                                <form
-                                                                action="{{ route('products.destroy', $stock->product->id) }}"
-                                                                method="POST" id="deleteForm{{ $stock->product->id }}">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="button"
-                                                                    class="dropdown-item text-danger"
-                                                                    onclick="confirmDelete({{ $stock->product->id }})">
-                                                                    <i class="bi bi-trash3 me-2"></i> លុប
-                                                                </button>
-                                                                </form>
+                                                                    <form
+                                                                        action="{{ route('products.destroy', $stock->product->id) }}"
+                                                                        method="POST"
+                                                                        id="deleteForm{{ $stock->product->id }}">
+                                                                        @csrf
+                                                                        @method('DELETE')
+                                                                        <button type="button" class="dropdown-item text-danger"
+                                                                            onclick="confirmDelete({{ $stock->product->id }})">
+                                                                            <i class="bi bi-trash3 me-2"></i> លុប
+                                                                        </button>
+                                                                    </form>
                                                                 @endcan
                                                             </div>
                                                         </div>
                                                     </td>
 
                                                 </tr>
-                                                {{-- @include('admin.products.modal.edit') --}}
                                             @endforeach
                                         </tbody>
                                     </table>
@@ -137,8 +146,6 @@
             </div>
         </div>
     </div>
-    @include('admin.products.modal.show')
-    @include('admin.products.modal.create')
     <script>
         function confirmDelete(postId) {
             Swal.fire({

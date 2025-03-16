@@ -21,7 +21,7 @@
                 <div class="col-sm-12">
                     <div class="card comman-shadow">
                         <div class="card-body">
-                            <form action="{{ route('customers.update', $customer->id) }}" method="POST" enctype="multipart/form-data">
+                            <form action="{{ route('customers.update', $customer->id) }}" method="POST" enctype="multipart/form-data" id="formcreate">
                                 @csrf
                                 @method('PUT')
                                 <div class="Row">
@@ -72,8 +72,10 @@
                                     <div class="form-group mt-4">
                                         <button type="submit" class="btn btn-primary btn-lg" id="saveButton">រក្សាទុក<i
                                                 class="bi bi-check-lg"></i></button>
-                                        <button type="button" class="btn btn-primary btn-lg" id="savingButton"
-                                            style="display: none;" disabled>
+                                        <button class="btn btn-primary btn-lg" type="button" disabled=""
+                                            id="savingButton" style="display: none;">
+                                            <span class="spinner-border spinner-border-sm me-1" role="status"
+                                                aria-hidden="true"></span>
                                             កំពុងរក្សាទុក...
                                         </button>
                                     </div>
@@ -85,4 +87,14 @@
             </div>
         </div>
     </div>
+    <script>
+        document.getElementById('formcreate').addEventListener('submit', function(event) {
+            event.preventDefault();
+            document.getElementById('saveButton').style.display = 'none';
+            document.getElementById('savingButton').style.display = 'inline-block';
+            setTimeout(() => {
+                document.getElementById('formcreate').submit();
+            }, 500);
+        });
+    </script>
 @endsection

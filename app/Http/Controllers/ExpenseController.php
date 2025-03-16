@@ -32,9 +32,10 @@ class ExpenseController extends Controller
 
     public function index()
     {
-        $expenses = Expense::with('category')->get();
+        $expenses = Expense::with('category')->orderBy('created_at', 'desc')->get(); // Show newest first
         return view('admin.expense.index', compact('expenses'));
     }
+    
 
     public function create()
     {

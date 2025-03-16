@@ -173,12 +173,17 @@
                                     <label for="note">ចំណាំ(បើមាន)</label>
                                     <textarea name="note" id="note" rows="5" class="form-control">{{ $salereturns->note }}</textarea>
                                 </div>
-                                <div class="mt-3">
-                                    <a type="button" href="{{ route('salesreturn.index') }}" class="btn btn-secondary"
-                                        id="exit">ចាកចេញ</a>
-                                    <button type="submit" class="btn btn-primary" id="updateSaleReturn">
-                                        កែប្រែការបញ្ជាទិញ<i class="bi bi-check"></i>
-                                    </button>
+                                <div class="mt-3 d-flex justify-content-end">
+                                    <div class="form-group mt-4">
+                                        <button type="submit" class="btn btn-primary btn-lg" id="saveButton">រក្សាទុក<i
+                                                class="bi bi-check-lg"></i></button>
+                                        <button class="btn btn-primary btn-lg" type="button" disabled=""
+                                            id="savingButton" style="display: none;">
+                                            <span class="spinner-border spinner-border-sm me-1" role="status"
+                                                aria-hidden="true"></span>
+                                            កំពុងរក្សាទុក...
+                                        </button>
+                                    </div>
                                 </div>
                             </form>
                         </div>
@@ -187,9 +192,18 @@
             </div>
         </div>
     </div>
+    
     @include('admin.suppliers.modal.create')
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.getElementById('formcreate').addEventListener('submit', function(event) {
+            event.preventDefault();
+            document.getElementById('saveButton').style.display = 'none';
+            document.getElementById('savingButton').style.display = 'inline-block';
+            setTimeout(() => {
+                document.getElementById('formcreate').submit();
+            }, 500);
+        });
+    </script>
     <script>
         $(document).ready(function() {
             $.ajaxSetup({

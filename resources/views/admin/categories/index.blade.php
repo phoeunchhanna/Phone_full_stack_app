@@ -63,10 +63,6 @@
                                                         class="btn  btn-secondary btn-sm"><i
                                                             class="bi bi-pencil-square"></i></a>
                                                         @endcan
-
-                                                        {{-- <a href="{{ route('brands.show', $brand) }}" type="button"
-                                                            class="btn  btn-primary btn-sm"><i
-                                                                class="bi bi-eye"></i></a> --}}
                                                         @can('លុបប្រភេទផលិតផល')
                                                         <form id="deleteForm{{ $category->id }}"
                                                             action="{{ route('categories.destroy', $category->id) }}"
@@ -81,7 +77,6 @@
 
                                                     </td>
                                                 </tr>
-                                                @include('admin.categories.modal.edit')
                                             @endforeach
                                         </tbody>
                                     </table>
@@ -93,9 +88,6 @@
             </div>
         </div>
     </div>
-
-    @include('admin.categories.modal.create')
-    {{-- delete js --}}
     <script>
         function confirmDelete(postId) {
             Swal.fire({

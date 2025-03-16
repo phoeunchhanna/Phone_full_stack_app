@@ -15,7 +15,7 @@ return [
     |
      */
 
-    'name' => env('APP_NAME', 'Laravel'),
+    'name'            => env('APP_NAME', 'Laravel'),
 
     /*
     |--------------------------------------------------------------------------
@@ -28,7 +28,7 @@ return [
     |
      */
 
-    'env' => env('APP_ENV', 'production'),
+    'env'             => env('APP_ENV', 'production'),
 
     /*
     |--------------------------------------------------------------------------
@@ -41,7 +41,7 @@ return [
     |
      */
 
-    'debug' => (bool) env('APP_DEBUG', false),
+    'debug'           => (bool) env('APP_DEBUG', false),
 
     /*
     |--------------------------------------------------------------------------
@@ -54,9 +54,9 @@ return [
     |
      */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url'             => env('APP_URL', 'http://localhost'),
 
-    'asset_url' => env('ASSET_URL', null),
+    'asset_url'       => env('ASSET_URL', null),
 
     /*
     |--------------------------------------------------------------------------
@@ -69,7 +69,7 @@ return [
     |
      */
 
-    'timezone' => 'UTC',
+    'timezone'        => 'UTC',
 
     /*
     |--------------------------------------------------------------------------
@@ -82,7 +82,7 @@ return [
     |
      */
 
-    'locale' => 'en',
+    'locale'          => 'en',
 
     /*
     |--------------------------------------------------------------------------
@@ -108,7 +108,7 @@ return [
     |
      */
 
-    'faker_locale' => 'en_US',
+    'faker_locale'    => 'en_US',
 
     /*
     |--------------------------------------------------------------------------
@@ -120,10 +120,10 @@ return [
     | will not be safe. Please do this before deploying an application!
     |
      */
-    'locale' => 'km',
-    'key' => env('APP_KEY'),
+    'locale'          => 'km',
+    'key'             => env('APP_KEY'),
 
-    'cipher' => 'AES-256-CBC',
+    'cipher'          => 'AES-256-CBC',
 
     /*
     |--------------------------------------------------------------------------
@@ -136,7 +136,7 @@ return [
     |
      */
 
-    'providers' => [
+    'providers'       => [
 
         /*
          * Laravel Framework Service Providers...
@@ -166,11 +166,11 @@ return [
         Maatwebsite\Excel\ExcelServiceProvider::class,
         Brian2694\Toastr\ToastrServiceProvider::class,
         Barryvdh\DomPDF\ServiceProvider::class,
-        
+        Milon\Barcode\BarcodeServiceProvider::class,
         /*
          * Package Service Providers...
          */
-
+        // Irazasyed\Telegram\TelegramServiceProvider::class,
         /*
          * Application Service Providers...
          */
@@ -193,10 +193,14 @@ return [
     |
      */
 
-    'aliases' => Facade::defaultAliases()->merge([
+    'aliases'         => Facade::defaultAliases()->merge([
+        'Telegram' => Irazasyed\Telegram\Facades\Telegram::class,
+
         'Toastr' => Brian2694\Toastr\Facades\Toastr::class,
-        'PDF' => Barryvdh\DomPDF\Facade::class,
-        'Excel' => Maatwebsite\Excel\Facades\Excel::class,
+        'PDF'    => Barryvdh\DomPDF\Facade::class,
+        'Excel'  => Maatwebsite\Excel\Facades\Excel::class,
+        'DNS1D'  => Milon\Barcode\Facades\DNS1DFacade::class,
+        'DNS2D'  => Milon\Barcode\Facades\DNS2DFacade::class,
     ])->toArray(),
 
 ];

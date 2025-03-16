@@ -2,82 +2,53 @@
     <div class="sidebar-inner slimscroll">
         <div id="sidebar-menu" class="sidebar-menu">
             <ul>
-
-                <li class=" {{ request()->routeIs('home') ? 'active' : '' }}">
-                    <a href="{{ route('home') }}">
+                <!-- Dashboard -->
+                <li class="submenu {{ request()->routeIs('home', 'seller.dashboard') ? 'active' : '' }}">
+                    <a href="#">
                         <i class="bi bi-house fs-5"></i>
                         <span>ទំព័រដើម</span>
                         <span class="menu-arrow"></span>
                     </a>
+                    <ul>
+                        @role('admin')
+                            <li>
+                                <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">
+                                    ទំព័រដើម
+                                </a>
+                            </li>
+                        @endrole
+                
+                        @hasanyrole('seller|admin')
+                            <li>
+                                <a href="{{ route('seller.dashboard') }}" class="{{ request()->routeIs('seller.dashboard') ? 'active' : '' }}">
+                                    <i class="bi bi-speedometer2 fs-5"></i>
+                                    <span>ទំព័រដើមអ្នកលក់</span>
+                                </a>
+                            </li>
+                        @endhasanyrole
+
+                    </ul>
                 </li>
-
-
-
-
-                @canany(['បញ្ជីការអនុញ្ញាត', 'បង្កើតការអនុញ្ញាត'])
-                    <li
-                        class="submenu {{ request()->routeIs('permissions.index') || request()->is('permissions/*/edit') || request()->routeIs('permissions.create') ? 'active' : '' }}">
-                        <a href="#">
-                            <i class="bi bi-shield-lock fs-5"></i>
-                            <span>ការអនុញ្ញាត</span>
-                            <span class="menu-arrow"></span>
-                        </a>
-                        <ul>
-                            @can('បញ្ជីការអនុញ្ញាត')
-                                <li>
-                                    <a href="{{ route('permissions.index') }}"
-                                        class="{{ request()->routeIs('permissions.index') || request()->is('permissions/*/edit') ? 'active' : '' }}">
-                                        បញ្ជីការអនុញ្ញាត
-                                    </a>
-                                </li>
-                            @endcan
-                            @can('បង្កើតការអនុញ្ញាត')
-                                <li>
-                                    <a href="{{ route('permissions.create') }}"
-                                        class="{{ request()->routeIs('permissions.create') ? 'active' : '' }}">
-                                        បង្កើតការអនុញ្ញាត
-                                    </a>
-                                </li>
-                            @endcan
-                        </ul>
-                    </li>
-                @endcanany
-
-                @canany(['បញ្ជីតួនាទីអ្នកប្រើប្រាស់', 'បង្កើតតួនាទីអ្នកប្រើប្រាស់'])
-                    <li
-                        class="submenu {{ request()->routeIs('roles.index') || request()->is('roles/*/edit') || request()->routeIs('roles.create') ? 'active' : '' }}">
-                        <a href="#">
-                            <i class="bi bi-gear fs-5"></i>
-                            <span>តួនាទីអ្នកប្រើប្រាស់</span>
-                            <span class="menu-arrow"></span>
-                        </a>
-                        <ul>
-                            @can('បញ្ជីតួនាទីអ្នកប្រើប្រាស់')
-                                <li>
-                                    <a href="{{ route('roles.index') }}"
-                                        class="{{ request()->routeIs('roles.index') || request()->is('roles/*/edit') ? 'active' : '' }}">
-                                        បញ្ជីតួនាទីអ្នកប្រើប្រាស់
-                                    </a>
-                                </li>
-                            @endcan
-                            @can('បង្កើតតួនាទីអ្នកប្រើប្រាស់')
-                                <li>
-                                    <a href="{{ route('roles.create') }}"
-                                        class="{{ request()->routeIs('roles.create') ? 'active' : '' }}">
-                                        បង្កើតតួនាទីអ្នកប្រើប្រាស់
-                                    </a>
-                                </li>
-                            @endcan
-
-                        </ul>
-                    </li>
-                @endcanany
-
-
-
-
-
-
+                 <!-- Admin Only Sections -->
+                @role('admin')
+                    @canany(['បញ្ជីតួនាទីអ្នកប្រើប្រាស់', 'បង្កើតតួនាទីអ្នកប្រើប្រាស់'])
+                        <li class="submenu {{ request()->routeIs('roles.*') ? 'active' : '' }}">
+                            <a href="#">
+                                <i class="bi bi-gear fs-5"></i>
+                                <span>តួនាទីអ្នកប្រើប្រាស់</span>
+                                <span class="menu-arrow"></span>
+                            </a>
+                            <ul>
+                                @can('បញ្ជីតួនាទីអ្នកប្រើប្រាស់')
+                                    <li><a href="{{ route('roles.index') }}" class="{{ request()->routeIs('roles.index') ? 'active' : '' }}">បញ្ជីតួនាទី</a></li>
+                                @endcan
+                                @can('បង្កើតតួនាទីអ្នកប្រើប្រាស់')
+                                    <li><a href="{{ route('roles.create') }}" class="{{ request()->routeIs('roles.create') ? 'active' : '' }}">បង្កើតតួនាទី</a></li>
+                                @endcan
+                            </ul>
+                        </li>
+                    @endcanany
+                @endrole
 
                 @canany(['បញ្ជីអ្នកប្រើប្រាស់', 'បង្កើតអ្នកប្រើប្រាស់'])
                     <li
@@ -199,27 +170,6 @@
                         </ul>
                     </li>
                 @endcanany
-
-
-                @canany(['ផ្ទាំងលក់ផលិតផល'])
-                    <li
-                        class="submenu {{ request()->routeIs('pos.index') || request()->is('pos/*/edit') || request()->routeIs('pos.index') ? 'active' : '' }}">
-                        <a href="#">
-                            <i class="bi bi-grid"></i>
-                            <span>POS</span></span>
-                            <span class="menu-arrow"></span>
-                        </a>
-                        <ul>
-                            <li>
-                                <a href="{{ route('pos.index') }}"
-                                    class="{{ request()->routeIs('pos.index') || request()->is('pos/*/edit') ? 'active' : '' }}">
-                                    POS
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                @endcanany
-
 
                 @canany(['បញ្ជីអ្នកផ្គត់ផ្គង់', 'បង្កើតអ្នកផ្គត់ផ្គង់'])
                     <li class="submenu {{ request()->routeIs('suppliers.*') ? 'active' : '' }}">
@@ -355,37 +305,45 @@
                     </li>
                 @endcanany
 
-                @canany(['បញ្ជីបង្វែចូលទំនិញ', 'បង្កើតបង្វែចូលទំនិញ'])
-                    <li class="submenu {{ request()->routeIs('sale-returns.*', 'sale-returns.index') ? 'active' : '' }}">
+                @canany(['បញ្ជីបង្វែចូលទំនិញ', 'បង្កើតបង្វែចូលទំនិញ','បញ្ជីការទូទាត់បង្វែចូលទំនិញ'])
+                    <li class="submenu {{ request()->routeIs('sale-returns.*', 'sale_return_payments.index') ? 'active' : '' }}">
                         <a href="#">
-                            <i class="bi bi-receipt fs-5"></i>
-                            <span>បង្វែចូលទំនិញ</span>
+                            <i class="bi bi-arrow-return-left fs-5"></i>
+                            <span>ការបង្វិលទំនិញចូល</span>
                             <span class="menu-arrow"></span>
                         </a>
                         <ul>
-                            @can('')
+                            @can('បញ្ជីបង្វែចូលទំនិញ')
                                 <li>
                                     <a href="{{ route('sale-returns.index') }}"
                                         class="{{ request()->routeIs('sale-returns.index') ? 'active' : '' }}">
-                                        បញ្ជីបង្វែចូលទំនិញ
+                                        បញ្ជីការបង្វិលទំនិញចូល
                                     </a>
                                 </li>
                             @endcan
 
-                            @can('')
+                            @can('បង្កើតបង្វែចូលទំនិញ')
                                 <li>
-                                    <a href="{{ route('sale_returns.reference') }}"
-                                        class="{{ request()->routeIs('sale_returns.reference') ? 'active' : '' }}">
-                                        បង្កើតបង្វែចូលទំនិញ
+                                    <a href="{{ route('sale-returns.create') }}"
+                                        class="{{ request()->routeIs('sale-returns.create') ? 'active' : '' }}">
+                                        បង្កើតការបង្វិលទំនិញចូល
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('បញ្ជីការទូទាត់បង្វែចូលទំនិញ')
+                                <li>
+                                    <a href="{{ route('sale_return_payments.index') }}"
+                                        class="{{ request()->routeIs('sale_return_payments.index') ? 'active' : '' }}">
+                                        បញ្ជីការទូទាត់ការបង្វិលទំនិញចូល
                                     </a>
                                 </li>
                             @endcan
                         </ul>
                     </li>
                 @endcanany
+
                 @canany(['បញ្ជីប្រភេទការចំណាយ', 'បង្កើតប្រភេទការចំណាយ', 'បញ្ជីការចំណាយ', 'បង្កើតការចំណាយ'])
-                    <li
-                        class="submenu {{ request()->routeIs('expenses.*', 'expense_categories.index') ? 'active' : '' }}">
+                    <li class="submenu {{ request()->routeIs('expenses.*', 'expense_categories.index') ? 'active' : '' }}">
                         <a href="#">
                             <i class="bi bi-bag fs-5"></i>
                             <span>ចំណាយ</span>
@@ -410,8 +368,8 @@
                             @endcan
 
                             @canany(['បញ្ជីប្រភេទការចំណាយ', 'បង្កើតប្រភេទការចំណាយ'])
-                                <hr>
                             @endcanany
+
                             @can('បញ្ជីការចំណាយ')
                                 <li>
                                     <a href="{{ route('expenses.index') }}"
@@ -432,11 +390,9 @@
                     </li>
                 @endcanany
 
-
                 @canany(['របាយការណ៍ការលក់ទំនិញ', 'របាយការណ៍ការទិញ', 'របាយការណ៍ប្រាក់ចំណេញ'])
-
                     <li
-                        class="submenu {{ request()->routeIs('admin.reports.sales', 'admin.purchase.report', 'profit.loss.report') ? 'active' : '' }}">
+                        class="submenu {{ request()->routeIs('sales.report.*', 'admin.purchase.report', 'profit.loss.report') ? 'active' : '' }}">
                         <a href="#">
                             <i class="bi bi-graph-up fs-5"></i>
                             <span>របាយការណ៍</span>
@@ -445,29 +401,17 @@
                         <ul>
                             @can('របាយការណ៍ការលក់ទំនិញ')
                                 <li>
-                                    <a href="{{ route('admin.reports.sales') }}"
-                                        class="{{ request()->routeIs('admin.reports.sales') ? 'active' : '' }}">
+                                    <a href="{{ route('sales.report.index') }}"
+                                        class="{{ request()->routeIs('sales.report.*') ? 'active' : '' }}">
                                         របាយការណ៍ការលក់
                                     </a>
                                 </li>
                             @endcan
 
-
-                            @can('របាយការណ៍ផលិតផល')
-                                <li>
-                                    <a href="{{ route('admin.reports.product') }}"
-                                        class="{{ request()->routeIs('admin.reports.product') ? 'active' : '' }}">
-                                        របាយការណ៍ផលិតផល
-                                    </a>
-                                </li>
-                            @endcan
-
-
-
                             @can('របាយការណ៍ការទិញ')
                                 <li>
-                                    <a href="{{ route('admin.purchase.report') }}"
-                                        class="{{ request()->routeIs('admin.purchase.report') ? 'active' : '' }}">
+                                    <a href="{{ route('purchases.report.index') }}"
+                                        class="{{ request()->routeIs('purchases.report.*') ? 'active' : '' }}">
                                         របាយការណ៍ការទិញ
                                     </a>
                                 </li>
@@ -475,9 +419,17 @@
 
                             @can('របាយការណ៍ប្រាក់ចំណេញ និងខាត')
                                 <li>
-                                    <a href="{{ route('profit.loss.report') }}"
-                                        class="{{ request()->routeIs('profit.loss.report') ? 'active' : '' }}">
+                                    <a href="{{ route('reports.profit-loss') }}"
+                                        class="{{ request()->routeIs('reports.profit-loss') ? 'active' : '' }}">
                                         របាយការណ៍ប្រាក់ចំណេញ និងខាត
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('របាយការណ៍ការបង្វែចូលទំនិញ')
+                                <li>
+                                    <a href="{{ route('reports.sale-return') }}"
+                                        class="{{ request()->routeIs('reports.sale-return') ? 'active' : '' }}">
+                                        របាយការណ៍ការបង្វែចូលទំនិញ
                                     </a>
                                 </li>
                             @endcan

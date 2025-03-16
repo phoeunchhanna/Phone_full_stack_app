@@ -1,11 +1,10 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class CustomerController extends Controller
 {
@@ -13,16 +12,16 @@ class CustomerController extends Controller
     public function __construct()
     {
         $permissions = [
-            'index' => 'បញ្ជីអតិថិជន',
-            'create' => 'បង្កើតអតិថិជន',
-            'edit' => 'កែប្រែអតិថិជន',
+            'index'   => 'បញ្ជីអតិថិជន',
+            'create'  => 'បង្កើតអតិថិជន',
+            'edit'    => 'កែប្រែអតិថិជន',
             'destroy' => 'លុបអតិថិជន',
 
         ];
 
         foreach ($permissions as $method => $permission) {
             $this->middleware(function ($request, $next) use ($permission) {
-                if (!auth()->user()->can($permission)) {
+                if (! auth()->user()->can($permission)) {
                     return back()->with('error', 'អ្នកមិនមានសិទ្ធិចូលប្រើទំព័រនេះទេ!');
                 }
                 return $next($request);
@@ -30,12 +29,12 @@ class CustomerController extends Controller
         }
     }
 
-
     public function index()
     {
-        $customers = Customer::all();
+        $customers = Customer::orderBy('created_at', 'desc')->get(); // Show newest first
         return view('admin.customers.index', compact('customers'));
     }
+
     public function create()
     {
         return view('admin.customers.create');
@@ -43,8 +42,8 @@ class CustomerController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'phone' => [
+            'name'    => 'required|string|max:255',
+            'phone'   => [
                 'required',
                 'string',
                 'regex:/^\d{8,10}$/',
@@ -53,7 +52,7 @@ class CustomerController extends Controller
             'address' => 'nullable|string|max:500',
         ], [
             'phone.unique' => 'លេខទូរស័ព្ទនេះមានរួចហើយ!',
-            'phone.regex' => 'លេខទូរស័ព្ទមិនត្រឹមត្រូវ!',
+            'phone.regex'  => 'លេខទូរស័ព្ទមិនត្រឹមត្រូវ!',
         ]);
         if ($validator->fails()) {
             return redirect()->back()
@@ -75,8 +74,8 @@ class CustomerController extends Controller
     public function update(Request $request, Customer $customer)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'phone' => [
+            'name'    => 'required|string|max:255',
+            'phone'   => [
                 'required',
                 'string',
                 'regex:/^\d{8,10}$/',
@@ -85,7 +84,7 @@ class CustomerController extends Controller
             'address' => 'nullable|string|max:500',
         ], [
             'phone.unique' => 'លេខទូរស័ព្ទនេះមានរួចហើយ!',
-            'phone.regex' => 'លេខទូរស័ព្ទមិនត្រឹមត្រូវ!',
+            'phone.regex'  => 'លេខទូរស័ព្ទមិនត្រឹមត្រូវ!',
         ]);
 
         $customer->update($request->all());

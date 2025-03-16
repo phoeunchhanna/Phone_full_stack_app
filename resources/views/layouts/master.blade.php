@@ -3,7 +3,6 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0 user-scalable=0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Dashboard</title>
@@ -18,9 +17,9 @@
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/img.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/toastr.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/plugins/daterangepicker/daterangepicker.css') }}" />
     <script src="{{ asset('assets/js/jquery-3.6.0.min.js') }}"></script>
     <script src="{{ asset('assets/plugins/chart.js') }}"></script>
-
 </head>
 
 <body>
@@ -34,6 +33,7 @@
         {{-- footer --}}
         @include('home.footer')
     </div>
+
     <script src="{{ asset('assets/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('assets/js/feather.min.js') }}"></script>
     <script src="{{ asset('assets/plugins/slimscroll/jquery.slimscroll.min.js') }}"></script>
@@ -46,13 +46,10 @@
     <script src="{{ asset('assets/plugins/select2/js/select2.min.js') }}"></script>
     <script src="{{ asset('assets/js/script.js') }}"></script>
     <script src="{{ asset('assets/js/sweetalert2.min.js') }}"></script>
-    <script src="{{ asset('assets/js/img.js') }}"></script>
-    <!-- JS Files -->
-    <script src="{{ asset('assets/plugins/pdfmake/vfs_fonts.js') }}"></script>
     <script src="{{ asset('assets/plugins/toastr/toastr.min.js') }}"></script>
-    <!-- CSS Files -->
-    <link rel="stylesheet" href="{{ asset('assets/plugins/toastr/toastr.min.css') }}">
+    <script src="{{ asset('assets/plugins/daterangepicker/daterangepicker.js') }}"></script>
     <script>
+        // Initialize DataTable
         function initializeDataTable() {
             if ($.fn.DataTable.isDataTable('.datatable')) {
                 $('.datatable').DataTable().destroy();
@@ -67,15 +64,9 @@
             });
         }
 
-        // Call this function whenever the table content is updated
         initializeDataTable();
-    </script>
-    {{-- <script>
-        $('.datatable').DataTable({
-    searching: true // Enable search
-});
-    </script> --}}
-    <script>
+
+        // Initialize Toastr Notifications
         toastr.options = {
             "closeButton": true,
             "debug": false,
@@ -93,8 +84,7 @@
             "showMethod": "fadeIn",
             "hideMethod": "fadeOut"
         }
-    </script>
-    <script>
+
         @if (session('success'))
             toastr.success("{{ session('success') }}", "Success");
         @endif
@@ -110,6 +100,36 @@
         @if (session('warning'))
             toastr.warning("{{ session('warning') }}", "Warning");
         @endif
+
+        // Initialize Date Range Picker
+        $(document).ready(function() {
+            $('.date_range_picker').daterangepicker({
+                locale: {
+                    format: 'DD/MM/YYYY', // Change format to DD/MM/YYYY
+                    applyLabel: 'អនុវត្ត',
+                    cancelLabel: 'បោះបង់',
+                    customRangeLabel: 'Custom Range'
+                },
+                maxDate: moment(),
+                autoUpdateInput: false,
+                ranges: {
+                    'ថ្ងៃនេះ': [moment(), moment()],
+                    'ម្សិលមិញ': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    '៧ថ្ងៃមុន': [moment().subtract(7, 'days'), moment()],
+                    '៣០ថ្ងៃមុន': [moment().subtract(30, 'days'), moment()],
+                    'ក្នុងខែនេះ': [moment().startOf('month'), moment().endOf('month')],
+                    'ខែមុន': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month')
+                        .endOf('month')
+                    ],
+                    'ទាំងអស់': [moment().subtract(10, 'years'), moment()]
+                }
+            });
+
+            $('.date_range_picker').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('DD/MM/YYYY') + ' to ' + picker.endDate.format(
+                    'DD/MM/YYYY')); // Change format
+            });
+        });
     </script>
 </body>
 

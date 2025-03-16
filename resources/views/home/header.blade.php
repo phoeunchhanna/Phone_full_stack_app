@@ -8,23 +8,28 @@
         </a>
     </div>
     <div class="menu-toggle">
-        <a href="javascript:void(0);" id="toggle_btn">
+        <a href="javascript:void(0);" id="toggle_btn" aria-label="Toggle Navigation Menu">
             <i class="fas fa-bars"></i>
         </a>
+
+        {{-- <a href="#" id="toggle_btn">
+            <i class="fas fa-bars"></i>
+        </a> --}}
     </div>
     <a class="mobile_btn" id="mobile_btn">
         <i class="fas fa-bars"></i>
     </a>
     <ul class="nav user-menu">
-        
+
         <li>
 
             <div class="header-title m-2 text-light">
                 ថ្ងៃនេះ, ថ្ងៃទី {{ now()->format('d') }} ខែ
-                    {{ now()->translatedFormat('F') }} ឆ្នាំ
-                    {{ now()->format('Y') }}
+                {{ now()->translatedFormat('F') }} ឆ្នាំ
+                {{ now()->format('Y') }}
             </div>
         </li>
+
         {{-- <li class="nav-item me-2">
             @can('ផ្ទាំងលក់ផលិតផល')
                 <a href="{{ route('close.sale') }}" class="nav-link header-nav-list win-maximize">
@@ -32,13 +37,13 @@
                 </a>
             @endcan
         </li> --}}
-        <li class="nav-item me-2">
+        {{-- <li class="nav-item me-2">
             @can('ផ្ទាំងលក់ផលិតផល')
                 <a href="{{ route('pos.index') }}" class="nav-link header-nav-list win-maximize">
                     <i>POS</i>
                 </a>
             @endcan
-        </li>
+        </li> --}}
 
         <li class="nav-item dropdown noti-dropdown me-2">
             <a href="#" class="dropdown-toggle nav-link header-nav-list" data-bs-toggle="dropdown">
@@ -67,7 +72,7 @@
                                     <div class="media d-flex">
                                         <span class="avatar avatar-sm flex-shrink-0">
                                             <img class="avatar-img rounded-circle" alt="រូបភាពផលិតផល"
-                                                src="{{ asset($product->image) }}">
+                                                src="{{ asset('storage/' . $product->image) }}">
                                         </span>
                                         <div class="media-body flex-grow-1">
                                             <p class="noti-details">
@@ -99,9 +104,13 @@
 
 
         <li class="nav-item zoom-screen me-2">
-            <a href="#" class="nav-link header-nav-list win-maximize">
+            {{-- <a href="#" class="nav-link header-nav-list win-maximize">
                 <i class="bi bi-fullscreen fs-6"></i>
+            </a> --}}
+            <a href="#" class="nav-link header-nav-list win-maximize" aria-label="Maximize window">
+                <i class="fas fa-expand"></i>
             </a>
+
         </li>
         <li class="nav-item dropdown has-arrow new-user-menus">
             <a href="#" class="dropdown-toggle nav-link" data-bs-toggle="dropdown">
@@ -126,12 +135,31 @@
                     </div>
                 </div>
                 <a class="dropdown-item" href="{{ route('profile.edit') }}">ព៌ត័មានផ្ទាល់ខ្លួន</a>
-                <a class="dropdown-item" href="#"
-                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">ចាកចេញ</a>
+                <a class="dropdown-item" href="#" onclick="confirmLogout(event)">ចាកចេញ</a>
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                     @csrf
                 </form>
+
             </div>
         </li>
     </ul>
 </div>
+<script>
+    function confirmLogout(event) {
+        event.preventDefault();
+        Swal.fire({
+            title: "តើអ្នកប្រាកដថា?",
+            text: "អ្នកនឹងត្រូវចាកចេញពីប្រព័ន្ធ!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "បាទ/ចាស, ចាកចេញ!",
+            cancelButtonText: "អត់ទេ, មិនចាកចេញ!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('logout-form').submit();
+            }
+        });
+    }
+</script>

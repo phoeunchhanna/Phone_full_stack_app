@@ -886,7 +886,7 @@ table.table td h2 span {
     border-radius: 50px;
 }
 .bg-primary {
-    background-color: #fff5d9 !important;
+    background-color: #0d6efd !important;
 }
 .pro-bg-primary,
 .badge-primary {
@@ -5829,9 +5829,10 @@ table.table-inbox tbody tr.checked {
     margin-left: auto;
     position: relative;
     width: 73px;
-    /* -webkit-user-select: none;
+    -webkit-user-select: none;
     -moz-user-select: none;
-    -ms-user-select: none; */
+    -ms-user-select: none;
+    user-select: none;
 }
 .onoffswitch-checkbox {
     display: none;

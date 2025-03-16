@@ -13,7 +13,6 @@
                     </div>
                 </div>
             </div>
-
             <!-- Product and Cart Section -->
             <div class="row">
                 <div class="col-sm-12">
@@ -25,6 +24,9 @@
                                 <div class="form-group d-flex align-items-center justify-content-between">
                                     <h3 class="text-primary font-weight-600 mb-0">បង្កើតការលក់</h3>
                                     <span>
+                                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#saleReturnModal">
+                                            <i class="bi bi-plus-circle"></i> បង្វិលទំនិញ
+                                        </button>
                                         <!-- Back Button -->
                                         <a href="{{ route('sales.index') }}" class="btn btn-outline-primary">
                                             <i class="fas fa-arrow-left"></i> ត្រឡប់ក្រោយ
@@ -33,18 +35,6 @@
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-lg-4 col-md-6">
-                                        <div class="form-group">
-                                            <label for="reference">លេខយោង</label>
-                                            <input type="text" class="form-control" name="reference" required readonly
-                                                value="SL-">
-                                            @error('reference')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                        </div>
-                                    </div>
                                     <div class="col-lg-4 col-md-6">
                                         <div class="form-group">
                                             <label for="customer_id">អតិថិជន <span class="text-danger">*</span></label>
@@ -70,7 +60,20 @@
                                                 value="{{ now()->format('Y-m-d') }}" max="{{ now()->format('Y-m-d') }}">
                                         </div>
                                     </div>
-                                    @include('partials.product_search')
+                                    <div class="mt-2">
+                                        <div class="row d-flex justify-content-center align-items-center">
+                                            <div class="col-lg-8 col-md-6">
+                                                <div class="form-group">
+                                                    <select id="product-search" class="form-select select2"
+                                                        aria-label="ស្វែងរកតាមឈ្មោះផលិតផល ឬលេខសម្គាល់...">
+                                                        <option value="" disabled selected>ស្វែងរកតាមឈ្មោះផលិតផល
+                                                            ឬលេខសម្គាល់...
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div class="table-responsive">
                                         <table class="table-hover table-center mb-4 table table-stripped">
                                             <thead class="" style="background-color: #0d6efd;color: white;">
@@ -150,9 +153,7 @@
                                     </div>
                                     <div class="row justify-content-md-end">
                                         <div class="col-md-4">
-
                                             <div class="invoice-total-card">
-
                                                 <div class="invoice-total-inner">
                                                     <h5 class="change_return_span d-flex justify-content-between">
                                                         <span>ចំនួនទឹកប្រាក់នៅសល់</span>
@@ -164,11 +165,16 @@
                                             </div>
                                         </div>
                                     </div>
-                                    {{-- Submit and Cancel Buttons --}}
                                     <div class="mt-3 d-flex justify-content-end">
                                         <div class="form-group mt-4">
-                                            <button type="submit" class="btn btn-lg btn-primary ms-2"
-                                                id="btnsave">រក្សារទុក <i class="bi bi-check-lg"></i></button>
+                                            <button type="submit" class="btn btn-primary btn-lg"
+                                                id="saveButton">រក្សាទុក<i class="bi bi-check-lg"></i></button>
+                                            <button class="btn btn-primary btn-lg" type="button" disabled=""
+                                                id="savingButton" style="display: none;">
+                                                <span class="spinner-border spinner-border-sm me-1" role="status"
+                                                    aria-hidden="true"></span>
+                                                កំពុងរក្សាទុក...
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -179,6 +185,39 @@
             </div>
         </div>
     </div>
+    {{-- Modal for Sale Return --}}
+    <div class="modal fade" id="saleReturnModal" tabindex="-1" aria-labelledby="saleReturnModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="saleReturnModalLabel">បង់វិលទំនិញ</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ route('sale_returns.getSaleDetails') }}" method="POST">
+                        @csrf
+                        <div class="mb-3">
+                            <label for="sale_reference">លេខយោងការលក់ <span class="text-danger">*</span></label>
+                            <input type="text" name="sale_reference" id="sale_reference" class="form-control"
+                                required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">បន្ត</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('formcreate').addEventListener('submit', function(event) {
+            event.preventDefault();
+            document.getElementById('saveButton').style.display = 'none';
+            document.getElementById('savingButton').style.display = 'inline-block';
+            setTimeout(() => {
+                document.getElementById('formcreate').submit();
+            }, 500);
+        });
+    </script>
     <script>
         $(document).ready(function() {
 
@@ -262,7 +301,7 @@
                             const cartBody = $("#cart_table");
                             cartBody.empty();
                             if (response.cartItems && response.cartItems.length > 0) {
-                                $("#btnsave").prop("disabled", false);
+                                $("#saveButton").prop("disabled", false);
                                 $.each(response.cartItems, function(index, item) {
                                     const itemTotal = (item.quantity * item.price).toFixed(2);
                                     total += parseFloat(itemTotal);
@@ -287,7 +326,7 @@
                                 });
                             } else {
                                 // If cart is empty
-                                $("#btnsave").prop("disabled", true);
+                                $("#saveButton").prop("disabled", true);
                                 cartBody.append(`
                                     <tr>
                                         <td colspan="6" class="text-center "><h5 class="text-danger">គ្មានទិន្នន័យ</h5></td>

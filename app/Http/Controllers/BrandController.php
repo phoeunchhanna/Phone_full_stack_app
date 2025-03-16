@@ -34,9 +34,10 @@ class BrandController extends Controller
 
     public function index()
     {
-        $brands = Brand::all();
+        $brands = Brand::orderBy('created_at', 'desc')->get(); // Show newest first
         return view('admin.brands.index', compact('brands'));
     }
+    
 
     public function create()
     {

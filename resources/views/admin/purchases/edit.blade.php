@@ -19,79 +19,76 @@
                 <div class="col-sm-12">
                     <div class="card">
                         <div class="card-body">
-                            <form id="purchase-form" action="{{ route('purchases.update', $purchase->id) }}" method="POST">
+                            <form id="purchase-form" action="{{ route('purchases.update', $purchase->id) }}" method="POST" id="formcreate">
                                 @csrf
                                 @method('PUT') <!-- Specifies that this is an update request -->
                                 <div class="form-group d-flex align-items-center justify-content-between">
                                     <h3 class="text-primary font-weight-600 mb-0">កែប្រែការបញ្ជាទិញ</h3>
                                     <span>
                                         <!-- Back Button -->
-                                        <a href="{{route('purchases.index')}}" class="btn btn-outline-primary">
+                                        <a href="{{ route('purchases.index') }}" class="btn btn-outline-primary">
                                             <i class="fas fa-arrow-left"></i> ត្រឡប់ក្រោយ
                                         </a>
                                     </span>
                                 </div>
                                 <div class="row">
-                                        {{-- Supplier --}}
-                                        <div class="col-lg-3 col-md-6">
-                                            <label for="supplier_id">អ្នកផ្គត់ផ្គង់ <span
-                                                    class="text-danger">*</span></label>
-                                            <select
-                                                class="form-control form-select @error('supplier_id') is-invalid @enderror"
-                                                name="supplier_id" id="supplier_id" required>
-                                                <option value="" disabled>----ជ្រើសរើសអ្នកផ្គត់ផ្គង់----</option>
-                                                @foreach ($suppliers as $supplier)
-                                                    <option value="{{ $supplier->id }}"
-                                                        {{ $purchase->supplier_id == $supplier->id ? 'selected' : '' }}>
-                                                        {{ $supplier->name }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                            @error('supplier_id')
-                                                <div class="invalid-feedback">
-                                                    {{ $message }}
-                                                </div>
-                                            @enderror
-                                        </div>
-                                        {{-- referent --}}
-                                        <div class="col-lg-3 col-md-6">
-                                            <div class="form-group">
-                                                <label for="reference">លេខយោង</label>
-                                                <input type="text" class="form-control" name="reference"
-                                                    value="{{ $purchase->reference }}">
+                                    {{-- Supplier --}}
+                                    <div class="col-lg-3 col-md-6">
+                                        <label for="supplier_id">អ្នកផ្គត់ផ្គង់ <span class="text-danger">*</span></label>
+                                        <select class="form-control form-select @error('supplier_id') is-invalid @enderror"
+                                            name="supplier_id" id="supplier_id" required>
+                                            <option value="" disabled>----ជ្រើសរើសអ្នកផ្គត់ផ្គង់----</option>
+                                            @foreach ($suppliers as $supplier)
+                                                <option value="{{ $supplier->id }}"
+                                                    {{ $purchase->supplier_id == $supplier->id ? 'selected' : '' }}>
+                                                    {{ $supplier->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        @error('supplier_id')
+                                            <div class="invalid-feedback">
+                                                {{ $message }}
                                             </div>
-                                        </div>
-                                        {{-- Date --}}
-                                        <div class="col-lg-3 col-md-6">
-                                            <label for="date">កាលបរិច្ឆេទ <span class="text-danger">*</span></label>
-                                            <input type="date" class="form-control" name="date" required
-                                                value="{{ $purchase->date }}" max="{{ now()->format('Y-m-d') }}">
-                                            @error('date')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                        </div>
-                                        {{-- Status --}}
-                                        <div class="col-lg-3 col-md-6">
-                                            <div class="form-group">
-                                                <label for="status">ស្ថានភាព <span class="text-danger">*</span></label>
-                                                <select class="form-control form-select" name="status" id="status"
-                                                    required>
-                                                    <option value="កំពុងរង់ចាំ"
-                                                        {{ $purchase->status == 'កំពុងរង់ចាំ' ? 'selected' : '' }}>
-                                                        កំពុងរង់ចាំ
-                                                    </option>
-                                                    <option value="បញ្ចប់"
-                                                        {{ $purchase->status == 'បញ្ចប់' ? 'selected' : '' }}>បញ្ចប់
-                                                    </option>
-                                                    <option value="បោះបង់"
-                                                        {{ $purchase->status == 'បោះបង់' ? 'selected' : '' }}>
-                                                        បោះបង់</option>
-                                                </select>
-                                            </div>
+                                        @enderror
+                                    </div>
+                                    {{-- referent --}}
+                                    <div class="col-lg-3 col-md-6">
+                                        <div class="form-group">
+                                            <label for="reference">លេខយោង</label>
+                                            <input type="text" class="form-control" name="reference"
+                                                value="{{ $purchase->reference }}">
                                         </div>
                                     </div>
+                                    {{-- Date --}}
+                                    <div class="col-lg-3 col-md-6">
+                                        <label for="date">កាលបរិច្ឆេទ <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control" name="date" required
+                                            value="{{ $purchase->date }}" max="{{ now()->format('Y-m-d') }}">
+                                        @error('date')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div>
+                                    {{-- Status --}}
+                                    <div class="col-lg-3 col-md-6">
+                                        <div class="form-group">
+                                            <label for="status">ស្ថានភាព <span class="text-danger">*</span></label>
+                                            <select class="form-control form-select" name="status" id="status" required>
+                                                <option value="កំពុងរង់ចាំ"
+                                                    {{ $purchase->status == 'កំពុងរង់ចាំ' ? 'selected' : '' }}>
+                                                    កំពុងរង់ចាំ
+                                                </option>
+                                                <option value="បញ្ចប់"
+                                                    {{ $purchase->status == 'បញ្ចប់' ? 'selected' : '' }}>បញ្ចប់
+                                                </option>
+                                                <option value="បោះបង់"
+                                                    {{ $purchase->status == 'បោះបង់' ? 'selected' : '' }}>
+                                                    បោះបង់</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
 
                                 {{-- Product Search --}}
                                 <div class="mt-2">
@@ -100,7 +97,8 @@
                                             <div class="form-group">
                                                 <select id="product-search" class="form-select select2"
                                                     aria-label="ស្វែងរកតាមឈ្មោះផលិតផល ឬលេខសម្គាល់...">
-                                                    <option value="" disabled>ស្វែងរកតាមឈ្មោះផលិតផល ឬលេខសម្គាល់...</option>
+                                                    <option value="" disabled>ស្វែងរកតាមឈ្មោះផលិតផល ឬលេខសម្គាល់...
+                                                    </option>
                                                 </select>
                                             </div>
                                         </div>
@@ -161,8 +159,7 @@
                                             <div class="col-md-6">
                                                 <div class="form-group ">
                                                     <label for="payment_method">វិធីសាស្ត្របង់ប្រាក់</label>
-                                                    <select name="payment_method" class="form-control form-select"
-                                                        required>
+                                                    <select name="payment_method" class="form-control form-select" required>
                                                         <option value="សាច់ប្រាក់"
                                                             {{ $purchase->payment_method == 'សាច់ប្រាក់' ? 'selected' : '' }}>
                                                             សាច់ប្រាក់</option>
@@ -223,12 +220,17 @@
                                         </div>
                                     </div>
                                 </div>
-
                                 {{-- Submit and Cancel Buttons --}}
                                 <div class="mt-3 d-flex justify-content-end">
                                     <div class="form-group mt-4">
-                                    <button type="submit" class="btn btn-lg btn-primary ms-2"
-                                        id="btnsave">រក្សារទុក <i class="bi bi-check-lg"></i></button>
+                                        <button type="submit" class="btn btn-primary btn-lg" id="saveButton">រក្សាទុក<i
+                                                class="bi bi-check-lg"></i></button>
+                                        <button class="btn btn-primary btn-lg" type="button" disabled=""
+                                            id="savingButton" style="display: none;">
+                                            <span class="spinner-border spinner-border-sm me-1" role="status"
+                                                aria-hidden="true"></span>
+                                            កំពុងរក្សាទុក...
+                                        </button>
                                     </div>
                                 </div>
                             </form>
@@ -238,6 +240,16 @@
             </div>
         </div>
     </div>
+    <script>
+        document.getElementById('formcreate').addEventListener('submit', function(event) {
+            event.preventDefault();
+            document.getElementById('saveButton').style.display = 'none';
+            document.getElementById('savingButton').style.display = 'inline-block';
+            setTimeout(() => {
+                document.getElementById('formcreate').submit();
+            }, 500);
+        });
+    </script>
     <script>
         $(document).ready(function() {
             $.ajaxSetup({
@@ -267,7 +279,7 @@
                         $("#discount_amount").val(discountAmount);
                     }
                     totalDiscount = discountAmount;
-                } else if(discountType === "none"){
+                } else if (discountType === "none") {
                     discountAmount = 0;
                 }
 

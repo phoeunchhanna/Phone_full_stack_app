@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('sale_return_id')->constrained('sale_returns')->onDelete('cascade');
             $table->decimal('amount', 10, 2);
             $table->date('date');
-            $table->string('reference');
+            $table->string('reference')->unique();
             $table->string('payment_method');
             $table->text('note')->nullable();
             $table->timestamps();

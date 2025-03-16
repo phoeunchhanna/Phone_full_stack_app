@@ -1,12 +1,8 @@
-<!-- resources/views/errors/403.blade.php -->
-@extends('layouts.app')
-
-@section('title', 'Forbidden')
+@extends('layouts.error')
 
 @section('content')
-    <div class="error-page">
-        <h1>403 - Forbidden</h1>
-        <p>You do not have permission to access this page.</p>
-        <a href="{{ url('/') }}" class="btn btn-primary">Go to Home</a>
-    </div>
+<img src="{{ asset('images/403.png') }}" alt="403 Forbidden">
+<h1 class="text-danger mt-3">403 - មិនមានសិទ្ធិចូលប្រើ</h1>
+<p class="text-muted">សូមទាក់ទងអ្នកគ្រប់គ្រងប្រព័ន្ធ។</p>
+<a href="{{ route('home') }}" class="btn btn-primary">ទៅទំព័រដើម</a>
 @endsection

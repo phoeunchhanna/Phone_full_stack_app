@@ -1,11 +1,12 @@
-@extends('error.app')
-
-@section('title', 'Page Not Found')
+@extends('layouts.error')
 
 @section('content')
-    <div class="error-page">
-        <h1>404 - Page Not Found</h1>
-        <p>We couldn't find the page you were looking for. It might have been moved or deleted.</p>
-        <a href="{{ url('/') }}" class="btn btn-primary">Go to Home</a>
+<div class="main-wrapper">
+    <div class="error-box">
+        <h1>404</h1>
+        <h3 class="h2 mb-3"><i class="fas fa-exclamation-triangle"></i> សូមអភ័យទោស! ទំព័រដែលអ្នកកំពុងរកមិនមានទេ</h3>
+        <p class="h4 font-weight-normal">សូមព្យាយាមម្តងទៀត ឬត្រឡប់ទៅទំព័រដើម</p>
+        <a href="{{route('home')}}" class="btn btn-primary">ត្រលប់ទៅគេហទំព័រដើម</a>
     </div>
+</div>
 @endsection

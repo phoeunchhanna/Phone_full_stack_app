@@ -13,6 +13,7 @@ class SaleReturn extends Model
         'date', 
         'reference', 
         'customer_id', 
+        'sale_id',
         'total_amount', 
         'discount', 
         'paid_amount', 
@@ -29,12 +30,6 @@ class SaleReturn extends Model
         return $this->belongsTo(Customer::class);
     }
 
-    // Relationship with User
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-
     // Relationship with SaleReturnDetails
     public function details()
     {
@@ -45,5 +40,11 @@ class SaleReturn extends Model
     public function payments()
     {
         return $this->hasMany(SaleReturnPayment::class);
+    }
+    
+    // Correct Relationship with Sale
+    public function sale()
+    {
+        return $this->belongsTo(Sale::class, 'sale_id');
     }
 }
