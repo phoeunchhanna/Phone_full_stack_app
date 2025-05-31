@@ -8,7 +8,8 @@
                     <div class="col">
                         <ul class="breadcrumb">
                             <li class="breadcrumb-item"><a href="{{ route('home') }}">ទំព័រដើម</a></li>
-                            <li class="breadcrumb-item"><a href="{{ route('sale-returns.index') }}">បញ្ជីការបង្វិលចូលទំនិញ</a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('sale-returns.index') }}">បញ្ជីការបង្វិលចូលទំនិញ</a>
+                            </li>
                             <li class="breadcrumb-item active">កែប្រែការបង្វិលចូលទំនិញ</li>
                         </ul>
                     </div>
@@ -42,13 +43,16 @@
                                     </div>
                                     <div class="col-lg-4 col-md-12">
                                         <div class="invoice-info invoice-info-one border-0">
-                                            <p>ឈ្មោះអតិថិជន: {{ $saleReturn->customer ? $saleReturn->customer->name : 'មិនមានព័ត៌មានអតិថិជន' }}</p>
+                                            <p>ឈ្មោះអតិថិជន:
+                                                {{ $saleReturn->customer ? $saleReturn->customer->name : 'មិនមានព័ត៌មានអតិថិជន' }}
+                                            </p>
                                             <p>លេខទូរស័ព្ទ : {{ $saleReturn->customer->phone }}</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <form action="{{ route('sale-returns.update', $saleReturn->id) }}" method="POST" id="formcreate">
+                            <form action="{{ route('sale-returns.update', $saleReturn->id) }}" method="POST"
+                                id="formcreate">
                                 @csrf
                                 @method('PUT') <!-- Since we're updating, we need to use PUT method -->
                                 <div class="row">
@@ -76,9 +80,13 @@
                                         <div class="form-group">
                                             <label for="status">ស្ថានភាព <span class="text-danger">*</span></label>
                                             <select class="form-control form-select" name="status" id="status" required>
-                                                <option value="កំពុងរង់ចាំ" {{ $saleReturn->status == 'កំពុងរង់ចាំ' ? 'selected' : '' }}>កំពុងរង់ចាំ</option>
-                                                <option value="បញ្ចប់" {{ $saleReturn->status == 'បញ្ចប់' ? 'selected' : '' }}>បញ្ចប់</option>
-                                                <option value="បោះបង់" {{ $saleReturn->status == 'បោះបង់' ? 'selected' : '' }}>បោះបង់</option>
+                                                <option value="កំពុងរង់ចាំ"
+                                                    {{ $saleReturn->status == 'កំពុងរង់ចាំ' ? 'selected' : '' }}>
+                                                    កំពុងរង់ចាំ</option>
+                                                <option value="បញ្ចប់"
+                                                    {{ $saleReturn->status == 'បញ្ចប់' ? 'selected' : '' }}>បញ្ចប់</option>
+                                                <option value="បោះបង់"
+                                                    {{ $saleReturn->status == 'បោះបង់' ? 'selected' : '' }}>បោះបង់</option>
                                             </select>
                                         </div>
                                     </div>
@@ -96,7 +104,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody id="tbl_purchase">
-                                                
+
                                             </tbody>
                                         </table>
                                     </div>
@@ -109,9 +117,15 @@
                                                         <label for="discount_type">ប្រភេទបញ្ចុះតម្លៃ</label>
                                                         <select name="discount_type" id="discount_type"
                                                             class="form-control form-select" required>
-                                                            <option value="none" {{ $saleReturn->discount_type == 'none' ? 'selected' : '' }}>គ្មានបញ្ចុះតម្លៃ</option>
-                                                            <option value="percentage" {{ $saleReturn->discount_type == 'percentage' ? 'selected' : '' }}>ជាភាគរយ (%)</option>
-                                                            <option value="fixed" {{ $saleReturn->discount_type == 'fixed' ? 'selected' : '' }}>ជាទឹកប្រាក់ ($)</option>
+                                                            <option value="none"
+                                                                {{ $saleReturn->discount_type == 'none' ? 'selected' : '' }}>
+                                                                គ្មានបញ្ចុះតម្លៃ</option>
+                                                            <option value="percentage"
+                                                                {{ $saleReturn->discount_type == 'percentage' ? 'selected' : '' }}>
+                                                                ជាភាគរយ (%)</option>
+                                                            <option value="fixed"
+                                                                {{ $saleReturn->discount_type == 'fixed' ? 'selected' : '' }}>
+                                                                ជាទឹកប្រាក់ ($)</option>
                                                         </select>
                                                     </div>
                                                 </div>
@@ -128,9 +142,15 @@
                                                         <label for="payment_method">វិធីសាស្ត្រទូទាត់</label>
                                                         <select name="payment_method" class="form-control form-select"
                                                             required>
-                                                            <option value="សាច់ប្រាក់" {{ $saleReturn->payment_method == 'សាច់ប្រាក់' ? 'selected' : '' }}>សាច់ប្រាក់</option>
-                                                            <option value="អេស៊ីលីដា" {{ $saleReturn->payment_method == 'អេស៊ីលីដា' ? 'selected' : '' }}>អេស៊ីលីដា</option>
-                                                            <option value="ABA" {{ $saleReturn->payment_method == 'ABA' ? 'selected' : '' }}>ABA</option>
+                                                            <option value="សាច់ប្រាក់"
+                                                                {{ $saleReturn->payment_method == 'សាច់ប្រាក់' ? 'selected' : '' }}>
+                                                                សាច់ប្រាក់</option>
+                                                            <option value="អេស៊ីលីដា"
+                                                                {{ $saleReturn->payment_method == 'អេស៊ីលីដា' ? 'selected' : '' }}>
+                                                                អេស៊ីលីដា</option>
+                                                            <option value="ABA"
+                                                                {{ $saleReturn->payment_method == 'ABA' ? 'selected' : '' }}>
+                                                                ABA</option>
                                                         </select>
                                                     </div>
                                                 </div>
@@ -138,8 +158,9 @@
                                                     <div class="form-group">
                                                         <label for="paid_amount">ចំនួនប្រាក់ដែលបានបង់</label>
                                                         <input type="number" name="paid_amount" placeholder="$"
-                                                            id="paid_amount" class="form-control" value="{{ $saleReturn->paid_amount }}"
-                                                            step="0.01" required>
+                                                            id="paid_amount" class="form-control"
+                                                            value="{{ $saleReturn->paid_amount }}" step="0.01"
+                                                            required>
                                                     </div>
                                                 </div>
                                             </div>
@@ -179,8 +200,8 @@
                                     </div>
                                     <div class="mt-3 d-flex justify-content-end">
                                         <div class="form-group mt-4">
-                                            <button type="submit" class="btn btn-primary btn-lg" id="saveButton">រក្សាទុក<i
-                                                    class="bi bi-check-lg"></i></button>
+                                            <button type="submit" class="btn btn-primary btn-lg"
+                                                id="saveButton">រក្សាទុក<i class="bi bi-check-lg"></i></button>
                                             <button class="btn btn-primary btn-lg" type="button" disabled=""
                                                 id="savingButton" style="display: none;">
                                                 <span class="spinner-border spinner-border-sm me-1" role="status"
@@ -215,8 +236,12 @@
                 }
             });
 
+            function formatPrice(amount) {
+                return `$ ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            }
+
             function calculateDiscount() {
-                let totalAmount = parseFloat($(".total_price").text()) || 0;
+                let totalAmount = parseFloat($(".total_price").text().replace(/[^0-9.]/g, '')) || 0;
                 let discountType = $("#discount_type").val();
                 let discountAmount = parseFloat($("#discount_amount").val()) || 0;
                 let paidAmount = parseFloat($("#paid_amount").val()) || 0;
@@ -232,7 +257,6 @@
                 } else if (discountType === "fixed") {
                     if (discountAmount > totalAmount) {
                         discountAmount = 0;
-                        toastr.warning("ការបញ្ចុះតម្លៃជាទឹកប្រាក់ មិនអាចលើសពីចំនួនទឹកប្រាក់សរុបបានទេ");
                         $("#discount_amount").val(discountAmount);
                     }
                     totalDiscount = discountAmount;
@@ -245,12 +269,11 @@
                     dueAmount = 0.00;
                 }
 
-                $("#display_due_amount").text(`${totalDiscount.toFixed(2)} $`);
-                $("#display_grandTotal").text(`${grandTotal.toFixed(2)} $`);
-                $("#due_amount").text(`${dueAmount.toFixed(2)} $`);
+                $("#display_due_amount").text(formatCurrency(totalDiscount));
+                $("#display_grandTotal").text(formatCurrency(grandTotal));
+                $("#due_amount").text(formatCurrency(dueAmount));
             }
 
-            // Attach event listeners
             $("#discount_type, #discount_amount").on("change keyup", function() {
                 $("#paid_amount").val("");
                 calculateDiscount();
@@ -258,13 +281,11 @@
 
             $("#paid_amount").on("keyup change", function() {
                 let paidAmount = parseFloat($("#paid_amount").val()) || 0;
-                let totalAmount = parseFloat($("#display_grandTotal").text()) || 0;
-                let discountAmount = parseFloat($("#discount_amount").val()) || 0;
+                let totalAmount = parseFloat($("#display_grandTotal").text().replace(/[^0-9.]/g, '')) || 0;
 
                 if (paidAmount > totalAmount) {
                     toastr.warning("ចំនួនទឹកប្រាក់ដែលបានបង់មិនអាចលើសពីតម្លៃសរុបទេ");
                     $("#paid_amount").val(totalAmount);
-                    paidAmount = totalAmount;
                 }
                 calculateDiscount();
             });
@@ -331,24 +352,25 @@
                         if (response.success) {
                             const cartBody = $("#tbl_purchase");
                             cartBody.empty();
-                            $("#totalPrice").text(response.totalPrice || "0.00");
+                            $("#totalPrice").text(formatPrice(response.totalPrice || 0));
 
                             if (response.cartItems && response.cartItems.length > 0) {
-                                $("#formcreate").prop("disabled", false);
+                                $("#saveButton").prop("disabled", false);
                                 $.each(response.cartItems, function(index, item) {
-                                    const itemTotal = (item.quantity * item.price).toFixed(2);
-                                    total += parseFloat(itemTotal);
+                                    const itemTotal = (item.quantity * item.price);
+                                    total += itemTotal;
                                     cartBody.append(`
                                         <tr data-product-id="${item.id}">
                                             <td>${index + 1}</td>
                                             <td>${item.name}</td>
-                                            <td>${item.price}</td>
+                                            <td>${formatPrice(item.price)}</td>
                                             <td>${item.sale_quantity}</td>
                                             <td>
                                                 <input type="hidden" value="${item.id}">
                                                 <input type="number" class="form-control cart-quantity" min="1" data-product-id="${item.id}" value="${item.quantity}" style="width: 100px; text-align: center;">
                                             </td>
-                                            <td class="priceDisplay">${itemTotal}</td>
+
+                                            <td class="priceDisplay">${formatPrice(itemTotal)}</td>
                                             <td class="text-center">
                                                 <button type="button" class="btn btn-danger btn-sm remove-item" data-product-id="${item.id}"><i class="bi bi-trash3"></i></button>
                                             </td>
@@ -356,20 +378,21 @@
                                     `);
                                 });
                             } else {
-                                $("#formcreate").prop("disabled", true);
+                                $("#paid_amount").val("");
+                                $("#saveButton").prop("disabled", true);
                                 cartBody.append(`
                                     <tr>
                                         <td colspan="6" class="text-center "><h5 class="text-danger">គ្មានទិន្នន័យ</h5></td>
                                     </tr>
                                 `);
-
+                                calculateDiscount();
                             }
-                            $(".total_price").text(`${total.toFixed(2)} $`);
-                            $("#display_grandTotal").text(total.toFixed(2));
+                            $(".total_price").text(formatPrice(total));
+                            $("#display_grandTotal").text(formatPrice(total));
                             calculateDiscount();
                         } else {
-                            $(".total_price").text("0.00");
-                            $("#display_grandTotal").text("0.00");
+                            $(".total_price").text(formatPrice(0));
+                            $("#display_grandTotal").text(formatPrice(0));
                             toastr.error("បរាជ័យក្នុងការទាញយកទិន្នន័យកន្ត្រក។");
                         }
                     },
@@ -386,22 +409,19 @@
 
                 $("#tablebody tr").each(function() {
                     const quantity = parseInt($(this).find(".cart-quantity").val()) || 0;
-                    const price = parseFloat($(this).find("td:nth-child(3)").text()) || 0;
+                    const price = parseFloat($(this).find("td:nth-child(3)").text().replace(/[^0-9.-]+/g,
+                        "")) || 0;
                     const rowTotal = quantity * price;
 
                     // Update row total
-                    $(this).find(".priceDisplay").text(rowTotal.toFixed(2));
+                    $(this).find(".priceDisplay").text(formatPrice(rowTotal));
                     totalPrice += rowTotal;
                 });
 
-                $("#totalPrice").text(totalPrice.toFixed(2));
-            }
-
-            $(document).on("change", ".cart-quantity", function() {
+                $("#totalPrice").text(formatPrice(totalPrice));
+            }("change", ".cart-quantity", function() {
                 calculateTotalPrice();
             });
-
-            getCarts();
 
             // Delete cart
             $(document).on("click", ".remove-item", function() {

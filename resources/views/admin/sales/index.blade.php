@@ -28,15 +28,24 @@
                                             បញ្ជីការលក់
                                         </h3>
                                         <div class="col-auto text-end float-end ms-auto download-grp">
-                                            <a href="{{ route('export.sales') }}" class="btn btn-outline-primary me-2"><i
-                                                    class="fas fa-download"></i> ទាញយកទិន្នន័យ</a>
+                                            {{-- <a href="{{ route('export.sales') }}" class="btn btn-outline-primary me-2"><i
+                                                    class="fas fa-download"></i> ទាញយកទិន្នន័យ</a> --}}
+                                            @if ($sales->count() > 0)
+                                                <a href="{{ route('export.sales') }}" class="btn btn-outline-primary me-2">
+                                                    <i class="fas fa-download"></i> ទាញយកទិន្នន័យ
+                                                </a>
+                                            @else
+                                                <button class="btn btn-outline-secondary me-2" disabled>
+                                                    <i class="fas fa-download"></i> ទាញយកទិន្នន័យ
+                                                </button>
+                                            @endif
                                             @can('បង្កើតការលក់')
-                                            <a href="{{ route('sales.create') }}" class="btn btn-primary"><i
-                                                class="fas fa-plus"></i> បន្ថែម</a>
+                                                <a href="{{ route('sales.create') }}" class="btn btn-primary"><i
+                                                        class="fas fa-plus"></i> បន្ថែម</a>
                                             @endcan
                                             @can('បង្កើតការបង្វិលទំនិញចូល')
-                                            
                                             @endcan
+
 
                                         </div>
                                     </div>
@@ -71,7 +80,8 @@
                                                                 value="{{ $sale->id }}">
                                                         </div>
                                                     </td>
-                                                    <td>{{ \Carbon\Carbon::parse($sale->date)->translatedFormat('d-F-Y') }}</td>
+                                                    <td>{{ \Carbon\Carbon::parse($sale->date)->translatedFormat('d-F-Y') }}
+                                                    </td>
                                                     <td class="text-primary">{{ $sale->reference }}
                                                     </td>
                                                     <td>{{ $sale->customer->name }}</td>
@@ -113,27 +123,27 @@
 
                                                                 <!-- Edit Sale -->
                                                                 @can('កែរប្រែការលក់')
-                                                                <a class="dropdown-item text-warning "
-                                                                    href="{{ route('sales.edit', $sale->id) }}">
-                                                                    <i class="bi bi-pencil-square me-2"></i> កែរប្រែ
-                                                                </a>
+                                                                    <a class="dropdown-item text-warning "
+                                                                        href="{{ route('sales.edit', $sale->id) }}">
+                                                                        <i class="bi bi-pencil-square me-2"></i> កែរប្រែ
+                                                                    </a>
                                                                 @endcan
 
 
                                                                 <!-- Delete Sale (only if completed) -->
                                                                 @can('លុបការលក់')
-                                                                @if ($sale->status == 'បញ្ចប់')
-                                                                    <form action="{{ route('sales.destroy', $sale) }}"
-                                                                        method="POST" id="deleteForm{{ $sale->id }}">
-                                                                        @csrf
-                                                                        @method('DELETE')
-                                                                        <button type="button"
-                                                                            class="dropdown-item text-danger"
-                                                                            onclick="confirmDelete({{ $sale->id }})">
-                                                                            <i class="bi bi-trash3 me-2"></i> លុប
-                                                                        </button>
-                                                                    </form>
-                                                                @endif
+                                                                    @if ($sale->status == 'បញ្ចប់')
+                                                                        <form action="{{ route('sales.destroy', $sale) }}"
+                                                                            method="POST" id="deleteForm{{ $sale->id }}">
+                                                                            @csrf
+                                                                            @method('DELETE')
+                                                                            <button type="button"
+                                                                                class="dropdown-item text-danger"
+                                                                                onclick="confirmDelete({{ $sale->id }})">
+                                                                                <i class="bi bi-trash3 me-2"></i> លុប
+                                                                            </button>
+                                                                        </form>
+                                                                    @endif
                                                                 @endcan
 
                                                                 @if ($sale->due_amount > 0)
@@ -161,39 +171,39 @@
         </div>
     </div>
     <!-- Invoice Modal -->
-<div class="modal fade" id="invoiceModal" tabindex="-1" aria-labelledby="invoiceModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="invoiceModalLabel">🧾 Invoice: <span id="invoiceReference"></span></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p><strong>📅 Date:</strong> <span id="invoiceDate"></span></p>
-                <p><strong>👤 Customer:</strong> <span id="invoiceCustomer"></span></p>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>ឈ្មោះផលិតផល</th>
-                            <th>ចំនួន</th>
-                            <th>តម្លៃ ($)</th>
-                            <th>សរុប ($)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="invoiceDetails"></tbody>
-                </table>
-                <p><strong>💰 Total Amount:</strong> $<span id="invoiceTotal"></span></p>
-                <p><strong>🔻 Discount:</strong> $<span id="invoiceDiscount"></span></p>
-                <p><strong>💵 Paid:</strong> $<span id="invoicePaid"></span></p>
-                <p><strong>🧾 Due:</strong> $<span id="invoiceDue"></span></p>
-            </div>
-            <div class="modal-footer">
-                <button onclick="printInvoice()" class="btn btn-primary">🖨️ Print</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">❌ Close</button>
+    <div class="modal fade" id="invoiceModal" tabindex="-1" aria-labelledby="invoiceModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="invoiceModalLabel">🧾 Invoice: <span id="invoiceReference"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>📅 Date:</strong> <span id="invoiceDate"></span></p>
+                    <p><strong>👤 Customer:</strong> <span id="invoiceCustomer"></span></p>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>ឈ្មោះផលិតផល</th>
+                                <th>ចំនួន</th>
+                                <th>តម្លៃ ($)</th>
+                                <th>សរុប ($)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoiceDetails"></tbody>
+                    </table>
+                    <p><strong>💰 Total Amount:</strong> $<span id="invoiceTotal"></span></p>
+                    <p><strong>🔻 Discount:</strong> $<span id="invoiceDiscount"></span></p>
+                    <p><strong>💵 Paid:</strong> $<span id="invoicePaid"></span></p>
+                    <p><strong>🧾 Due:</strong> $<span id="invoiceDue"></span></p>
+                </div>
+                <div class="modal-footer">
+                    <button onclick="printInvoice()" class="btn btn-primary">🖨️ Print</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">❌ Close</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     <script>
         function confirmDelete(postId) {

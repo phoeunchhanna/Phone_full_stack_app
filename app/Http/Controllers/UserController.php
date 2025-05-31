@@ -53,6 +53,7 @@ class UserController extends Controller
     {
         $request->validate([
             'name'     => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username',
             'email'    => 'required|email|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
             'role'     => 'required|exists:roles,name', 
@@ -61,6 +62,7 @@ class UserController extends Controller
         // Create the user first
         $user = User::create([
             'name'     => $request->name,
+            'username' => $request->username,
             'email'    => $request->email,
             'password' => Hash::make($request->password),
         ]);
@@ -104,7 +106,15 @@ class UserController extends Controller
     {
 
         $request->validate([
-            'name'     => 'required|string|max:255',
+            'name'     => 
+            'required|string|max:255',
+                // Allow Khmer or English letters (must include at least one letter), may include English digits, but reject if only digits or contains Khmer digits
+                'regex:/^(?![\d]+$)(?!.*[\x{17E0}-\x{17E9}])[\x{1780}-\x{17FF}a-zA-Z0-9\s]+$/u',
+            'username'     => 
+            // 'required|string|max:255|unique:users,username',
+            'required|string|max:255',
+              // Allow Khmer and English letters, allow English numbers, disallow Khmer digits, disallow only numbers
+              'regex:/^(?![0-9]+$)(?!.*[\x{17E0}-\x{17E9}])[\x{1780}-\x{17FF}a-zA-Z0-9._]+$/u',
             'email'    => 'required|email|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:6|confirmed',
             'avatar'   => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
@@ -121,7 +131,8 @@ class UserController extends Controller
             $user->avatar  = $imagePath;
         }
         $user->update([
-            'name'      => $request->name,
+            'name'  => $request->name,
+            'username'  => $request->username,
             'email'     => $request->email,
             'password'  => $request->password ? Hash::make($request->password) : $user->password,
         ]);
@@ -166,7 +177,14 @@ class UserController extends Controller
         $user = Auth::user();
 
         $request->validate([
-            'name'   => 'required|string|max:255',
+            'name'   => 
+            'required|string|max:255',
+                // Allow Khmer or English letters (must include at least one letter), may include English digits, but reject if only digits or contains Khmer digits
+            'regex:/^(?![\d]+$)(?!.*[\x{17E0}-\x{17E9}])[\x{1780}-\x{17FF}a-zA-Z0-9\s]+$/u',
+            'username'   => 
+            'required|string|max:255|unique:users,username',
+             // Allow Khmer and English letters, allow English numbers, disallow Khmer digits, disallow only numbers
+            'regex:/^(?![0-9]+$)(?!.*[\x{17E0}-\x{17E9}])[\x{1780}-\x{17FF}a-zA-Z0-9._]+$/u',
             'email'  => 'required|email|unique:users,email,' . $user->id,
             'avatar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
@@ -183,6 +201,7 @@ class UserController extends Controller
 
         $user->update([
             'name'  => $request->name,
+            'username'  => $request->useranme,
             'email' => $request->email,
         ]);
 

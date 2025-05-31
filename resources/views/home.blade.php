@@ -19,12 +19,31 @@
             <div class="page-header">
                 <div class="row">
                     <div class="col-sm-12">
-                        <div class="page-sub-header">
-                            <h3 class="page-title">{{ $greeting }}! {{ Auth::user()->name }}</h3>
-                            <ul class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="{{ route('home') }}">ទំព័រដើម</a></li>
-                                <li class="breadcrumb-item active">{{ Session::get('name') }}</li>
-                            </ul>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <!-- Left: Greeting Message -->
+                            <h3 class="page-title text-primary">
+                                {{ $greeting }}! {{ Auth::check() ? Auth::user()->name : 'Guest' }}
+                            </h3>
+
+                            <!-- Right: Date Range Filter Form -->
+                            <form action="{{ route('home') }}" method="GET" class="d-flex">
+                                <div class="me-2">
+                                    <div class="form-group">
+                                    {{-- <label for="date_range" class="form-label">ជ្រើសរើស ថ្ងៃខែឆ្នាំ</label> --}}
+                                    <input type="text" name="date_range" id="date_range"
+                                        class="form-control date_range_picker"
+                                        value="{{ request('date_range', now()->subDays(7)->format('d/m/Y') . ' to ' . now()->format('d/m/Y')) }}"
+                                        readonly>
+                                    </div>
+                                </div>
+                                <div class=" align-items-end">
+                                    <div class="from-group">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-filter"></i> ពិនិត្យមើល
+                                    </button>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -35,25 +54,25 @@
                     $dashboardStats = [
                         [
                             'title' => 'ចំណូលសរុប',
-                            'value' => number_format($totalRevenue, 2),
+                            'value' => '$ '. number_format($totalRevenue, 2),
                             'icon' => 'bi-cash-stack',
                             'bg' => 'bg-success',
                         ],
                         [
                             'title' => 'ចំណាយសរុប',
-                            'value' => number_format($totalExpenses, 2),
+                            'value' => '$ '.number_format($totalExpenses, 2),
                             'icon' => 'bi-credit-card',
                             'bg' => 'bg-danger',
                         ],
                         [
                             'title' => 'ចំណេញ / ខាត',
-                            'value' => number_format($totalProfit, 2),
+                            'value' => '$ '. number_format($totalProfit, 2),
                             'icon' => 'bi-graph-up',
                             'bg' => $totalProfit >= 0 ? 'bg-primary' : 'bg-warning',
                         ], // Fixed
                         ['title' => 'ចំនួនការលក់', 'value' => $totalSales, 'icon' => 'bi-cart', 'bg' => 'bg-info'],
                         [
-                            'title' => 'ចំនួនការបង្វែត្រឡប់',
+                            'title' => 'ចំនួនការបង្វិលត្រឡប់',
                             'value' => $totalReturns,
                             'icon' => 'bi-arrow-left-right',
                             'bg' => 'bg-secondary',
@@ -78,8 +97,7 @@
                         ],
                     ];
                 @endphp
-
-
+    {{-- cart --}}
                 <div class="row">
                     @foreach ($dashboardStats as $stat)
                         <div class="col-xl-3 col-sm-6 col-12 d-flex">
@@ -170,7 +188,7 @@
             @endif
             <div class="row">
                 <div class="col-xl-6 d-flex">
-                    
+
                     <div class="card">
                         <div class="card-body">
                             <h4 class="card-title">ក្រាហ្វិកហិរញ្ញវត្ថុ</h4>
@@ -231,6 +249,23 @@
             </div>
         </div>
     </div>
+    <script>
+        $(document).ready(function() {
+            $('.date_range_picker').daterangepicker({
+                locale: {
+                    format: 'DD/MM/YYYY'
+                },
+                autoUpdateInput: false
+            }).on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('DD/MM/YYYY') + ' to ' + picker.endDate.format(
+                    'DD/MM/YYYY'));
+
+                // ✅ Auto-submit form when date range is selected
+                $(this).closest('form').submit();
+            });
+        });
+    </script>
+
     <script>
         var ctx = document.getElementById('financialChart').getContext('2d');
         var financialChart = new Chart(ctx, {

@@ -23,7 +23,10 @@ class Sale extends Model
         'payment_status',
         'description',
     ];
-
+    // date formating
+    protected $casts = [
+        'date' => 'datetime',
+    ];
     public function saleDetails()
     {
         return $this->hasMany(SaleDetail::class);
@@ -38,5 +41,4 @@ class Sale extends Model
     {
         return $this->belongsTo(User::class);
     }
-
 }

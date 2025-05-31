@@ -13,6 +13,7 @@ class Purchase extends Model
         'supplier_id',
         'total_amount',
         'discount',
+        'condition',
         'paid_amount',
         'due_amount',
         'status',

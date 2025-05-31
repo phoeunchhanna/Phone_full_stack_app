@@ -14,6 +14,7 @@ class SaleReturnDetail extends Model
         'product_id', 
         'unit_price', 
         'quantity', 
+        'sold_quantity',
         'discount', 
         'total_price'
     ];

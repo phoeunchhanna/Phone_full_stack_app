@@ -80,7 +80,7 @@ class SaleReturnPaymentController extends Controller
     public function edit($sale_return_id, SaleReturnPayment $saleReturnPayment)
     {
         $saleReturn = SaleReturn::findOrFail($sale_return_id);
-        return view('admin.sale_return.sales_return_payments.edit', compact('saleReturnPayment', 'saleReturn'));
+        return view('admin.sale_returns.sales_return_payments.edit', compact('saleReturnPayment', 'saleReturn'));
     }
 
     public function update(Request $request, SaleReturnPayment $saleReturnPayment)

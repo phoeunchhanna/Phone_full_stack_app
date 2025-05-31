@@ -17,4 +17,20 @@ class LoginController extends Controller
     {
         $this->middleware('guest')->except('logout');
     }
+
+    protected function credentials(\Illuminate\Http\Request $request)
+    {
+        $login = $request->input($this->username());
+
+        $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+
+        return [
+            $field => $login,
+            'password' => $request->input('password'),
+        ];
+    }
+    public function username()
+    {
+        return 'email'; // still use 'email' field name from form
+    }
 }

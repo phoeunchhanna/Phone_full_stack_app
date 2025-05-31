@@ -32,7 +32,7 @@
                                         <label for="date_range">ជ្រើសរើស ថ្ងៃខែឆ្នាំ</label>
                                         <input type="text" name="date_range" id="date_range"
                                             class="form-control date_range_picker"
-                                            value="{{ request('date_range', now()->subDays(7)->format('d/m/Y') . ' to ' . now()->format('d/m/Y')) }}">
+                                            value="{{ request('date_range', now()->subDays(7)->format('d/m/Y') . ' to ' . now()->format('d/m/Y')) }}" readonly>
                                     </div>
                                     <!-- Customer -->
                                     <div class="col-md-4">

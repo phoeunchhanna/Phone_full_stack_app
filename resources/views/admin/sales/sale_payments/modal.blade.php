@@ -2,14 +2,14 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="paymentModalLabel-{{ $sale->id }}">ព័ត៌មានលម្អិតអំពីការទូទាត់</h5>
+                <h5 class="modal-title" id="paymentModalLabel-{{ $sale->id }}">បន្ថែមការទូទាត់ការលក់</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form action="{{ route('sale_payments.store') }}" method="POST">
                     @csrf
                     <div class="form-group">
-                        <label for="reference">យោងការទិញ</label>
+                        <label for="reference">យោងការលក់</label>
                         <input type="text" class="form-control" name="reference" required readonly value="INV/{{ $sale->reference }}">
                     </div>
                     <div class="form-group">

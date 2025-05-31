@@ -13,8 +13,10 @@ use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\PurchasePaymentController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Report\ProfitAndLossReportController;
+use App\Http\Controllers\Report\SaleReturnReportController;
 use App\Http\Controllers\Report\PurchasesReportController;
 use App\Http\Controllers\Report\SalesReportController;
+use App\Http\Controllers\Report\StocksReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SalePaymentController;
@@ -23,19 +25,43 @@ use App\Http\Controllers\SaleReturnPaymentController;
 use App\Http\Controllers\SellerDashboardController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ClientController;
+
 use Illuminate\Support\Facades\Route;
 
-// Login route
 Route::get('/', function () {
+    return view('userhome');
+});
+Route::get('/', [ClientController::class, 'userhome'])->name('client.home');
+Route::get('/pro_client/{id}', [ClientController::class, 'pro_show'])->name('product_client.show');
+Route::get('/pro_list_client/{id}', [ClientController::class, 'pro_list_show'])->name('product_client.list');
+// Show products by brand
+Route::get('/brand/{id}', [ClientController::class, 'productsByBrand'])->name('brand.products');
+// Show products by category
+Route::get('/category/{id}', [ClientController::class, 'productsByCategory'])->name('category.products');
+Route::get('/add-to-cart/{id}', [ClientController::class, 'addToCart'])->name('add.to.cart');
+Route::post('/update-cart', [ClientController::class, 'updateCart'])->name('cart.update');
+Route::delete('/cart/remove', [ClientController::class, 'removeFromCart'])->name('cart.remove');
+Route::get('/cart', [ClientController::class, 'viewCart'])->name('cart.view');
+
+// Checkout Routes
+Route::get('/checkout', [ClientController::class, 'checkout'])->name('checkout');
+Route::post('/checkout/process', [ClientController::class, 'processCheckout'])->name('checkout.process');
+Route::get('/order/confirmation', [ClientController::class, 'orderConfirmation'])->name('order.confirmation');
+Route::get('/order/print', [ClientController::class, 'printOrder'])->name('order.print');
+Route::post('/cart/increase/{id}', [ClientController::class, 'increaseQuantity'])->name('cart.increase');
+
+
+
+
+// client side 
+
+
+// Login route
+Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
-// Route::middleware(['auth', 'user_type:admin'])->group(function () {
-//     // Admin User Management
-//     Route::resource('users', UserController::class);
-//     Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
-//     Route::post('/users/{id}', [UserController::class, 'update'])->name('users.update');
 
-// });
 // Authenticated routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
@@ -112,9 +138,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/purchases/cart/clear', [PurchaseController::class, 'clear'])->name('purchases.cart.clear');
     Route::post('/purchases/cart/updateQuantity', [PurchaseController::class, 'updateQuantity'])->name('purchases.cart.updateQuantity');
 
-    //Report management
-    Route::get('reports/sale-return', [ReportController::class, 'SaleReturnReport'])->name('reports.sale-return');
-    Route::get('reports/purchases', [ReportController::class, 'PurchaseReport'])->name('admin.purchase.report');
     //purchase payments
     Route::get('/purchase_payments', [PurchasePaymentController::class, 'index'])->name('purchase_payments.index');
     Route::get('purchase_payments/create/{purchase_id}', [PurchasePaymentController::class, 'create'])->name('purchase_payments.create');
@@ -171,13 +194,6 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/sale-return-payments/update/{saleReturnPayment}', [SaleReturnPaymentController::class, 'update'])->name('sale_return_payments.update');
     Route::delete('/sale-return-payments/{saleReturnPayment}', [SaleReturnPaymentController::class, 'destroy'])->name('sale_return_payments.destroy');
 
-// Route::post('/purchases/cart/add', [PurchaseController::class, 'add'])->name('purchases.cart.add');
-// Route::get('/purchases/cart', [PurchaseController::class, 'show'])->name('purchases.cart.show');
-// Route::get('/purchases/cart/items', [PurchaseController::class, 'getCarts'])->name('purchases.cart.items');
-// Route::post('/purchases/cart/delete', [PurchaseController::class, 'delete'])->name('purchases.cart.delete');
-// Route::post('/purchases/cart/clear', [PurchaseController::class, 'clear'])->name('purchases.cart.clear');
-// Route::post('/purchases/cart/updateQuantity', [PurchaseController::class, 'updateQuantity'])->name('purchases.cart.updateQuantity');
-
     Route::get('/sale-return/invoice/{saleReturnId}', [SaleReturnController::class, 'showSaleReturnInvoice'])->name('sale-return.invoice');
     Route::get('/sale-returns/invoice/{id}', [SaleReturnController::class, 'getInvoice']);
     // Route::get('/sale-returns/reference', [SaleReturnController::class, 'showReferenceForm'])->name('sale_returns.reference');
@@ -197,9 +213,17 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/purchases-report/export', [PurchasesReportController::class, 'exportReport'])->name('purchases.report.export');
     //Expense Report management
     Route::get('/reports/profit-loss', [ProfitAndLossReportController::class, 'profitLoss'])->name('reports.profit-loss');
+    
+    //Report Sale Return 
+    Route::get('/sale-return-report', [SaleReturnReportController::class, 'index'])->name('sale-return.report.index');
+    Route::post('/sale-return-report/filter', [SaleReturnReportController::class, 'SaleReturnReport'])->name('sale-return.report.filter');
+    Route::get('/sale-return-report/print', [SaleReturnReportController::class, 'printReport'])->name('sale-return.report.print');
+    Route::get('/sale-return/export', [SaleReturnReportController::class, 'exportReport'])->name('sale-return.export');
+    //Report Stock
+    Route::get('/stock-report', [StocksReportController::class, 'index'])->name('stock.report.index');
+    Route::get('/stock-report/get-categories', [StocksReportController::class, 'getCategoriesByBrand'])->name('stocks.report.getCategories');
+    Route::get('/stock-report/get-products', [StocksReportController::class, 'getProductsByFilters'])->name('stocks.report.getProducts');
+    Route::get('/stock-report/export', [StocksReportController::class, 'exportExcel'])->name('stock.report.export.excel');
+
 });
 Auth::routes();
-// Seller Routes
-// Route::middleware(['auth', 'role:seller'])->group(function () {
-//     Route::get('/seller/dashboard', [SellerDashboardController::class, 'index'])->name('seller.dashboard');
-// });

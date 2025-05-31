@@ -52,7 +52,7 @@
                                                     </div>
                                                 </td>
                                                 <td>{{ $payment->purchase->reference ?? 'N/A' }}</td>
-                                                <td>${{ $payment->amount }}</td>
+                                                <td>${{number_format( $payment->amount ,2)}}</td>
                                                 <td>{{ \Carbon\Carbon::parse($payment->date)->translatedFormat('d-F-Y') }}</td>
                                                 <td>{{ $payment->payment_method }}</td>
                                                 <td>

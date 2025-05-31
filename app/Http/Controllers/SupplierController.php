@@ -44,7 +44,10 @@ class SupplierController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 
+                'required|string|max:255',
+                    // Allow Khmer or English letters (must include at least one letter), may include English digits, but reject if only digits or contains Khmer digits
+                'regex:/^(?![\d]+$)(?!.*[\x{17E0}-\x{17E9}])[\x{1780}-\x{17FF}a-zA-Z0-9\s]+$/u',
             'phone' => [
                 'required',
                 'string',
@@ -69,7 +72,10 @@ class SupplierController extends Controller
     public function update(Request $request, Supplier $supplier)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 
+            'required|string|max:255',
+                // Allow Khmer or English letters (must include at least one letter), may include English digits, but reject if only digits or contains Khmer digits
+            'regex:/^(?![\d]+$)(?!.*[\x{17E0}-\x{17E9}])[\x{1780}-\x{17FF}a-zA-Z0-9\s]+$/u',
             'phone' => [
                 'required',
                 'string',

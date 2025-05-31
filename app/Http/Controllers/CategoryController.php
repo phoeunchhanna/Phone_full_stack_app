@@ -45,6 +45,8 @@ class CategoryController extends Controller
                 'required',
                 'string',
                 'max:255',
+                // Allow Khmer or English letters (must include at least one letter), may include English digits, but reject if only digits or contains Khmer digits
+                'regex:/^(?=.*[\x{1780}-\x{17A2}a-zA-Z])(?!^[\x{17E0}-\x{17E9}0-9\s]+$)[\x{1780}-\x{17FF}a-zA-Z0-9\s]+$/u',
                 Rule::unique('categories', 'name'),
             ],
         ], [
@@ -70,6 +72,8 @@ class CategoryController extends Controller
                 'required',
                 'string',
                 'max:255',
+                // Allow Khmer or English letters (must include at least one letter), may include English digits, but reject if only digits or contains Khmer digits
+               'regex:/^(?=.*[\x{1780}-\x{17A2}a-zA-Z])(?!^[\x{17E0}-\x{17E9}0-9\s]+$)[\x{1780}-\x{17FF}a-zA-Z0-9\s]+$/u',
                 Rule::unique('categories')->ignore($category->id),
             ],
             'description' => 'nullable|string|max:255',

@@ -1,14 +1,12 @@
 <?php
-
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use App\Models\User;
 use App\Models\Customer;
+use App\Models\User;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
-use Illuminate\Support\Facades\Hash;
 
 class AdminSeeder extends Seeder
 {
@@ -18,9 +16,11 @@ class AdminSeeder extends Seeder
         $admin = User::firstOrCreate(
             ['email' => 'admin@gmail.com'],
             [
-                'name' => 'Admin',
-                'password' => Hash::make('admin123'),
+                'name'      => 'Admin',
+                'username'      => 'myadmin',
+                'password'  => Hash::make('admin123'),
                 'user_type' => 'admin',
+                
             ]
         );
 
@@ -33,9 +33,11 @@ class AdminSeeder extends Seeder
         $seller = User::firstOrCreate(
             ['email' => 'seller@gmail.com'],
             [
-                'name' => 'Seller',
-                'password' => Hash::make('seller123'),
+                'name'      => 'Seller',
+                'username'  => 'myseller',
+                'password'  => Hash::make('seller123'),
                 'user_type' => 'seller',
+                
             ]
         );
 
@@ -46,47 +48,58 @@ class AdminSeeder extends Seeder
 
         // Define Admin Permissions
         $adminPermissions = [
-            //product
+            // Products
+            'បញ្ជីផលិតផល',
+            'បង្កើតផលិតផល',
+            'កែប្រែផលិតផល',
+            'លុបផលិតផល',
+            'ទាញយកផលិតផល',
+            // Categories
             'បញ្ជីប្រភេទផលិតផល',
             'បង្កើតប្រភេទផលិតផល',
             'កែប្រែប្រភេទផលិតផល',
             'លុបប្រភេទផលិតផល',
-            //brand
+            // Brands
             'បញ្ជីម៉ាកយីហោ',
             'បង្កើតម៉ាកយីហោ',
             'កែប្រែម៉ាកយីហោ',
             'លុបម៉ាកយីហោ',
-            //supplier
+            // Suppliers
             'បញ្ជីអ្នកផ្គត់ផ្គង់',
             'បង្កើតអ្នកផ្គត់ផ្គង់',
             'កែប្រែអ្នកផ្គត់ផ្គង់',
             'លុបអ្នកផ្គត់ផ្គង់',
-            //customer
+            // Customers
             'បញ្ជីអតិថិជន',
             'បង្កើតអតិថិជន',
             'កែប្រែអតិថិជន',
             'លុបអតិថិជន',
-            //expense
+            // Expenses
             'បញ្ជីការចំណាយ',
             'បង្កើតការចំណាយ',
             'កែប្រែការចំណាយ',
             'លុបការចំណាយ',
-            //purchase
+            // Expense Categories
+            'បញ្ជីប្រភេទចំណាយ',
+            'បង្កើតប្រភេទចំណាយ',
+            'កែប្រែប្រភេទចំណាយ',
+            'លុបប្រភេទចំណាយ',
+            // Purchases
             'បញ្ជីការបញ្ជាទិញ',
             'បង្កើតការបញ្ជាទិញ',
             'កែប្រែការបញ្ជាទិញ',
             'លុបការបញ្ជាទិញ',
-            //sale
+            // Sales
             'បញ្ជីការលក់',
             'បង្កើតការលក់',
-            'កែរប្រែការលក់',
+            'កែប្រែការលក់',
             'លុបការលក់',
-            //sale_return
+            // Sale Returns
             'បញ្ជីការបង្វិលទំនិញចូល',
             'បង្កើតការបង្វិលទំនិញចូល',
-            'កែរប្រែការបង្វិលទំនិញចូល',
+            'កែប្រែការបង្វិលទំនិញចូល',
             'លុបការបង្វិលទំនិញចូល',
-            //report
+            // Reports
             'របាយការណ៍ការលក់ផលិតផល',
             'របាយការណ៍ស្តុកទំនិញ',
             'របាយការណ៍ការបង្វិលទំនិញចូល',
@@ -106,6 +119,8 @@ class AdminSeeder extends Seeder
             'បង្កើតការបង្វែចូលទំនិញ',
             'កែរប្រែការបង្វែចូលទំនិញ',
             'លុបការបង្វែចូលទំនិញ',
+            //Sale Return Payment
+            'បញ្ជីការទូទាត់បង្វែចូលទំនិញ',
             //customer
             'បញ្ជីអតិថិជន',
             'បង្កើតអតិថិជន',
@@ -128,8 +143,8 @@ class AdminSeeder extends Seeder
 
         // Create General Customer
         Customer::firstOrCreate([
-            'name' => 'អតិថិជនទូទៅ',
-            'phone' => 'N/A',
+            'name'    => 'អតិថិជនទូទៅ',
+            'phone'   => 'N/A',
             'address' => 'N/A',
         ]);
     }

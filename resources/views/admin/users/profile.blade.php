@@ -52,8 +52,16 @@
                                     </div>
                                     <div class="form-group">
                                         <label for="name">ឈ្មោះ <span class="text-danger">*</span></label>
-                                        <input class="form-control" type="text" name="name" required
+                                        <input class="form-control" type="text" name="name" required readonly
                                             value="{{ auth()->user()->name }}">
+                                        @error('name')
+                                            <p class="text-danger">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="name">ឈ្មោះប្រើប្រាស់ <span class="text-danger">*</span></label>
+                                        <input class="form-control" type="text" name="name" required readonly
+                                            value="{{ auth()->user()->username }}">
                                         @error('name')
                                             <p class="text-danger">{{ $message }}</p>
                                         @enderror
@@ -61,7 +69,7 @@
 
                                     <div class="form-group">
                                         <label for="email">អ៊ីមែល <span class="text-danger">*</span></label>
-                                        <input class="form-control" type="email" name="email" required
+                                        <input class="form-control" type="email" name="email" required readonly
                                             value="{{ auth()->user()->email }}">
                                         @error('email')
                                             <p class="text-danger">{{ $message }}</p>

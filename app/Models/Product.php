@@ -22,13 +22,20 @@ class Product extends Model
         'brand_id',
     ];
 
+    // public function category()
+    // {
+    //     return $this->belongsTo(Category::class, 'category_id');
+    // }
+    
     public function category()
     {
-        return $this->belongsTo(Category::class, 'category_id');
+        return $this->belongsTo(Category::class);
     }
     public function brand()
     {
-        return $this->belongsTo(Brand::class, 'brand_id');
+        // old
+        // return $this->belongsTo(Brand::class, 'brand_id');
+         return $this->belongsTo(Brand::class);
     }
 
     public function saleDetails()

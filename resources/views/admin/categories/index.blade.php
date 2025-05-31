@@ -49,7 +49,6 @@
                                         </thead>
                                         <tbody>
                                             @foreach ($categories as $category)
-                                                <tr>
                                                     <td>
                                                         <div class="form-check check-tables">
                                                             <input class="form-check-input" type="checkbox" value="something">

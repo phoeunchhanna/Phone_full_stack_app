@@ -78,9 +78,9 @@
                                                     <td class="text-primary">{{ $purchase->reference }}
                                                     </td>
                                                     <td>{{ $purchase->supplier->name }}</td>
-                                                    <td class="text-end">{{ $purchase->total_amount }} $</td>
-                                                    <td class="text-end">{{ $purchase->paid_amount }} $</td>
-                                                    <td class="text-end">{{ $purchase->due_amount }} $</td>
+                                                    <td class="text-end">{{ number_format($purchase->total_amount, 2) }} $</td>
+                                                    <td class="text-end">{{ number_format($purchase->paid_amount, 2) }} $</td>
+                                                    <td class="text-end">{{ number_format($purchase->due_amount, 2) }} $</td>
                                                     <td>
                                                         <h6>
                                                             <span
@@ -121,9 +121,8 @@
                                                                     </a>
                                                                 @endcan
 
-                                                                <!-- Delete Sale (only if completed) -->
                                                                 @can('លុបការបញ្ជាទិញ')
-                                                                    {{-- @if ($purchase->status == 'បញ្ចប់') --}}
+                                                                    @if ($purchase->payment_status == 'មិនទាន់ទូទាត់')
                                                                         <form
                                                                             action="{{ route('purchases.destroy', $purchase) }}"
                                                                             method="POST" id="deleteForm{{ $purchase->id }}">
@@ -135,7 +134,7 @@
                                                                                 <i class="bi bi-trash3 me-2"></i> លុប
                                                                             </button>
                                                                         </form>
-                                                                    {{-- @endif --}}
+                                                                    @endif
                                                                 @endcan
 
 

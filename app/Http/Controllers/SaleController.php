@@ -78,11 +78,13 @@ class SaleController extends Controller
             }
 
             $totalDiscount = min($totalDiscount, $totalAmount);
+            $latestSale    = Sale::latest()->first();
+            $nextNumber    = $latestSale ? $latestSale->id + 1 : 1;
 
             // Create the sale record
             $sale = Sale::create([
                 'date'           => $request->date,
-                'reference'      => 'SL-10000' . mt_rand(1, 10000),
+                'reference'      => 'SL-' . str_pad($nextNumber, 6, '0', STR_PAD_LEFT),
                 'user_id'        => Auth::id(),
                 'customer_id'    => $request->customer_id,
                 'total_amount'   => $totalAmount,
@@ -244,8 +246,8 @@ class SaleController extends Controller
         $chatId   = env('TELEGRAM_CHAT_ID');
 
         $message = "🛒 *ការលក់ថ្មីត្រូវបានកត់ត្រា!*\n";
-        $message .="លេខវិក័យបត្រ" . $sale->reference . "\n";
-        $message .= "📅 *កាលបរិច្ឆេទ:* " . $sale->date->toDateTimeString() . "\n";
+        $message .= "លេខវិក័យបត្រ" . $sale->reference . "\n";
+        $message .= "📅 *កាលបរិច្ឆេទ:* " . $sale->date . "\n";
         $message .= "📌 *ឈ្មោះអតិថិជន:* {$sale->customer->name}\n";
         $message .= "👤 *អ្នកគិតលុយ:* {$sale->user->name}\n";
         $message .= "💰 *ចំនួនទឹកប្រាក់សរុប:* " . number_format($sale->total_amount, 2) . " USD\n";
@@ -398,6 +400,13 @@ class SaleController extends Controller
             ]);
         });
     }
+    public function destroy($id)
+    {
+        $sale = Sale::findOrFail($id);
+        $sale->saleDetails()->delete();
+        $sale->delete();
+        return redirect()->route('sales.index')->with('success', 'ទិន្នន័យត្រូវបានលុបដោយជៅកជ័យ');
+    }
     public function print_invoice_pos(Sale $sales)
     {
         $sales = $sales->load('saleDetails');
@@ -420,33 +429,75 @@ class SaleController extends Controller
         return response()->json(['success' => false, 'message' => 'គ្មានអ្វីដែលត្រូវសម្អាតទេ!.']);
     }
 
+    // public function add(Request $request)
+    // {
+    //     $product  = Product::find($request->input('product_id'));
+    //     $quantity = $request->input('quantity', 1);
+    //     $discount = $request->discount ?? 0;
+
+    //     if (! $product) {
+    //         return response()->json([
+    //             'status'  => 404,
+    //             'message' => 'Product not found!',
+    //         ]);
+    //     }
+    //     if ($product->quantity < $quantity) {
+    //         return response()->json([
+    //             'status'  => 400,
+    //             'message' => 'ស្តុកមិនគ្រប់គ្រាន់សម្រាប់: ' . $product->name,
+    //         ]);
+    //     }
+
+    //     $cart = Session::get('cart', []);
+
+    //     if (isset($cart[$product->id])) {
+    //         if ($product->quantity < $cart[$product->id]['quantity'] + $quantity) {
+    //             return response()->json([
+    //                 'status'  => 400,
+    //                 'message' => 'ចំនួនក្នងស្តុកមិនគ្រប់គ្រាន់: ' . $product->name,
+    //             ]);
+    //         } else {
+    //             $cart[$product->id]['quantity'] += $quantity;
+    //         }
+    //     } else {
+    //         $cart[$request->product_id] = [
+    //             'id' => $request->product_id,
+    //             'name'     => $product->name,
+    //             'discount' => $discount,
+    //             'quantity' => $request->quantity,
+    //             'price'    => $product->selling_price,
+    //         ];
+    //     }
+
+    //     session()->put('cart', $cart);
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'ផលិតផលត្រូវបានបន្ថែមជោគជ័យ!',
+    //         'cart'    => $cart,
+    //     ]);
+    // }
     public function add(Request $request)
     {
-        $product  = Product::find($request->input('product_id'));
-        $quantity = $request->input('quantity', 1);
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'quantity'   => 'required|integer|min:1',
+            'discount'   => 'nullable|numeric|min:0',
+        ]);
+
+        $product  = Product::find($request->product_id);
+        $quantity = $request->quantity;
         $discount = $request->discount ?? 0;
 
-        if (! $product) {
-            return response()->json([
-                'status'  => 404,
-                'message' => 'Product not found!',
-            ]);
-        }
         if ($product->quantity < $quantity) {
-            return response()->json([
-                'status'  => 400,
-                'message' => 'ស្តុកមិនគ្រប់គ្រាន់សម្រាប់: ' . $product->name,
-            ]);
+            return response()->json(['status' => 400, 'message' => 'Stock not enough for: ' . $product->name]);
         }
 
-        $cart = session()->get('cart', []);
+        $cart = Session::get('cart', []);
 
         if (isset($cart[$product->id])) {
             if ($product->quantity < $cart[$product->id]['quantity'] + $quantity) {
-                return response()->json([
-                    'status'  => 400,
-                    'message' => 'ចំនួនក្នងស្តុកមិនគ្រប់គ្រាន់: ' . $product->name,
-                ]);
+                return response()->json(['status' => 400, 'message' => 'Stock not enough: ' . $product->name]);
             } else {
                 $cart[$product->id]['quantity'] += $quantity;
             }
@@ -457,6 +508,7 @@ class SaleController extends Controller
                 'discount' => $discount,
                 'quantity' => $quantity,
                 'price'    => $product->selling_price,
+                'total'    => ($product->selling_price * $quantity) - $discount,
             ];
         }
 
@@ -464,11 +516,10 @@ class SaleController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'ផលិតផលត្រូវបានបន្ថែមជោគជ័យ!',
+            'message' => 'Product added successfully!',
             'cart'    => $cart,
         ]);
     }
-
     public function delete(Request $request)
     {
         $cart = session()->get('cart', []);
@@ -533,41 +584,38 @@ class SaleController extends Controller
     }
     public function updateQuantity(Request $request)
     {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'quantity'   => 'required|integer|min:0',
+        ]);
+
         $cart        = session()->get('cart', []);
         $productId   = $request->product_id;
         $newQuantity = $request->quantity;
         $product     = Product::find($productId);
 
         if (! $product) {
-            return response()->json([
-                'success' => false,
-                'message' => 'ផលិតផលក្នុងស្តុកមិនគ្រប់គ្រាន់.',
-            ], 404);
+            return response()->json(['success' => false, 'message' => 'Product not found.'], 404);
         }
 
         if ($product->quantity < $newQuantity) {
-            return response()->json([
-                'success' => false,
-                'message' => 'ចំនួនក្នុងស្តុកមិនគ្រប់គ្រាន់.',
-            ], 400);
+            return response()->json(['success' => false, 'message' => 'Stock not enough.'], 400);
         }
 
-        if (isset($cart[$productId]) && $newQuantity > 0) {
+        if ($newQuantity == 0) {
+            unset($cart[$productId]);
+        } else {
             $cart[$productId]['quantity'] = $newQuantity;
-            $cart[$productId]['total']    = $newQuantity * $cart[$productId]['price'];
-            session()->put('cart', $cart);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'ទិន្នន័យត្រូវបានកែប្រែដោយជោគជ័យ!',
-                'cart'    => $cart,
-            ]);
+            $cart[$productId]['total']    = ($cart[$productId]['price'] * $newQuantity) - $cart[$productId]['discount'];
         }
+
+        session()->put('cart', $cart);
 
         return response()->json([
-            'success' => false,
-            'message' => 'មិនត្រឹមត្រូវ.',
-        ], 400);
+            'success' => true,
+            'message' => 'Quantity updated successfully!',
+            'cart'    => $cart,
+        ]);
     }
     public function updatediscount(Request $request)
     {
@@ -614,7 +662,6 @@ class SaleController extends Controller
         ], 404);
     }
 
-    
     public function exportSalesToExcel(Request $request)
     {
 

@@ -12,7 +12,7 @@
                     <div class="page-sub-header">
                         <ul class="breadcrumb">
                             <li class="breadcrumb-item"><a href="{{ route('home') }}">ទំព័រដើម</a></li>
-                            <li class="breadcrumb-item active">ការទូទាត់ការលក់</li>
+                            <li class="breadcrumb-item active">បញ្ជីការទូទាត់ការបង្វិលចូលទំនិញ</li>
                         </ul>
                     </div>
                 </div>
@@ -26,13 +26,13 @@
                         <div class="page-header">
                             <div class="row align-items-center">
                                 <div class="col">
-                                    <h3 class="text-primary font-weight-600">បញ្ជីការទូទាត់ការលក់</h3>
+                                    <h3 class="text-primary font-weight-600">បញ្ជីការទូទាត់ការបង្វិលចូលទំនិញ</h3>
                                 </div>
-                                <div class="col-auto text-end">
+                                {{-- <div class="col-auto text-end">
                                     <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createPaymentModal">
                                         <i class="bi bi-plus"></i> បន្ថែមការទូទាត់
                                     </a>
-                                </div>
+                                </div> --}}
                             </div>
                         </div>
 

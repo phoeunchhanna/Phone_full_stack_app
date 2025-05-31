@@ -11,7 +11,7 @@
                         <div class="page-sub-header">
                             <ul class="breadcrumb">
                                 <li class="breadcrumb-item"><a href="{{ route('home') }}">ទំព័រដើម</a></li>
-                                <li class="breadcrumb-item active">របាយការណ៍ការលក់ផលិតផល</li>
+                                <li class="breadcrumb-item active">របាយការណ៍ការបញ្ជាទិញ</li>
                             </ul>
                         </div>
                     </div>
@@ -22,7 +22,7 @@
                     <div class="card border-0 shadow-sm">
                         <div class="card-body">
                             <h3 class="text-primary font-weight-600">
-                                របាយការណ៍ការទិញផលិតផល
+                                របាយការណ៍ការបញ្ជាទិញ
                             </h3>
                             <form method="POST" action="{{ route('purchases.report.filter') }}">
                                 @csrf
@@ -32,13 +32,13 @@
                                         <label for="date_range">ជ្រើសរើស ថ្ងៃខែឆ្នាំ</label>
                                         <input type="text" name="date_range" id="date_range"
                                             class="form-control date_range_picker"
-                                            value="{{ request('date_range', now()->subDays(7)->format('d/m/Y') . ' to ' . now()->format('d/m/Y')) }}">
+                                            value="{{ request('date_range', now()->subDays(7)->format('d/m/Y') . ' to ' . now()->format('d/m/Y')) }}" readonly>
                                     </div>
                                     <!-- supplier -->
                                     <div class="col-md-4">
-                                        <label for="supplier_id">ជ្រើសរើសអតិថិជន</label>
+                                        <label for="supplier_id">ជ្រើសរើសអ្នកផ្គត់ផ្គង់</label>
                                         <select name="supplier_id" class="form-control form-select">
-                                            <option value="">អតិថិជនទាំងអស់</option>
+                                            <option value="">អ្នកផ្គត់ផ្គង់ទាំងអស់</option>
                                             @foreach ($suppliers as $supplier)
                                                 <option value="{{ $supplier->id }}"
                                                     {{ request('supplier_id') == $supplier->id ? 'selected' : '' }}>

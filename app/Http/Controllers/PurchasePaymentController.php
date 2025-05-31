@@ -140,6 +140,6 @@ class PurchasePaymentController extends Controller
     public function destroy(PurchasePayment $PurchasePayment)
     {
         $PurchasePayment->delete();
-        return redirect()->route('Purchase_payments.index')->with('success', 'ទិន្នន័យត្រូវបានលុបដោយជោគជ័យ.');
+        return redirect()->route('admin.Purchases.Purchase_payments.index')->with('success', 'ទិន្នន័យត្រូវបានលុបដោយជោគជ័យ.');
     }
 }

@@ -20,7 +20,7 @@
                 <div class="col-sm-12">
                     <div class="card comman-shadow">
                         <div class="card-body">
-                            <form action="{{ route('categories.update', $brand->id) }}" method="POST" id="formcreate">
+                            <form action="{{ route('brands.update', $brand->id) }}" method="POST" id="formcreate">
                                 @csrf
                                 @method('PUT')
                                 <div class="modal-body">
@@ -28,17 +28,16 @@
                                         <h3 class="text-primary font-weight-600 mb-0">កែប្រែម៉ាកយីហោ</h3>
                                         <span>
                                             <!-- Back Button -->
-                                            <a href="{{route('brands.index')}}" class="btn btn-outline-primary">
+                                            <a href="{{ route('brands.index') }}" class="btn btn-outline-primary">
                                                 <i class="fas fa-arrow-left"></i> ត្រឡប់ក្រោយ
                                             </a>
                                         </span>
                                     </div>
                                     <div class="form-group">
-                                        <label for="name">ឈ្មោះម៉ាកយីហោ<span
-                                                class="login-danger">*</span></label>
+                                        <label for="name">ឈ្មោះម៉ាកយីហោ<span class="login-danger">*</span></label>
                                         <input type="text" class="form-control @error('name') is-invalid @enderror"
                                             id="name" name="name" value="{{ old('name', $brand->name) }}"
-                                            placeholder="បញ្ចូលឈ្មោះម៉ាកយីហោ" required>
+                                            placeholder="បញ្ចូលឈ្មោះម៉ាកយីហោ" required oninput="check_nuber(this)">
                                         @error('name')
                                             <span class="invalid-feedback" role="alert">
                                                 <strong>{{ $message }}</strong>
@@ -80,5 +79,24 @@
                 document.getElementById('formcreate').submit();
             }, 500);
         });
+
+        // Note allow number 
+        function check_nuber(input) {
+            const khmerDigitsOnly = /^[\u17E0-\u17E9]+$/; // only Khmer digits
+            const allowedPattern = /^[\u1780-\u17FFa-zA-Z0-9\s]+$/; // valid characters
+
+            const containsLetter = /[\u1780-\u17A2a-zA-Z]/.test(input.value); // at least one Khmer or English letter
+
+            if (
+                khmerDigitsOnly.test(input.value) || // only Khmer digits
+                !allowedPattern.test(input.value) || // contains invalid characters
+                !containsLetter // no letters at all
+            ) {
+                input.setCustomValidity(
+                    "សូមបញ្ចូលអក្សរខ្មែរឬអង់គ្លេស។ អាចមានលេខអង់គ្លេស ឬខ្មែរបាន ប៉ុន្តែហាមប្រើលេខតែឯង។");
+            } else {
+                input.setCustomValidity("");
+            }
+        }
     </script>
 @endsection

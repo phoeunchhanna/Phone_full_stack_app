@@ -2078,4 +2078,44 @@ url(/fonts/vendor/bootstrap-icons/bootstrap-icons.woff?39795c0b4513de014cf8685fc
 .bi-vignette::before { content: "\f903"; }
 
 
+@import 'custom';
+
+body {
+    font-family: 'Rubik', sans-serif;
+    color: #000;
+}
+
+
+.dropdown-submenu {
+    position: relative;
+    
+    .dropdown-menu {
+        top: 0;
+        left: 100%;
+        margin-top: -1px;
+    }
+}
+
+
+.navbar-brand {
+    font-weight: 500;
+}
+
+// Top bar
+.top-bar {
+    font-size: 0.875rem;
+}
+
+
+@media (max-width: 767.98px) {
+    .navbar-collapse {
+        padding-top: 1rem;
+    }
+    
+    .search-form {
+        margin-top: 1rem;
+    }
+}
+
+
 

@@ -52,6 +52,7 @@ class PurchaseController extends Controller
 
     public function store(Request $request)
     {
+       
         return DB::transaction(function () use ($request) {
             $cart = Session::get('cart', []);
 
@@ -76,12 +77,15 @@ class PurchaseController extends Controller
             } elseif ($discountType == 'fixed') {
                 $totalDiscount = $discountAmount;
             }
-            $totalDiscount = min($totalDiscount, $totalAmount);
+            $totalDiscount  = min($totalDiscount, $totalAmount);
+            $latestPurchase = Purchase::latest()->first();
+            $nextNumber     = $latestPurchase ? $latestPurchase->id + 1 : 1;
 
             // Create the purchase record
             $purchase = Purchase::create([
                 'date'           => $request->date,
-                'reference'      => 'PUR-10000' . mt_rand(1, 100000),
+                // 'reference'      => 'PUR-' . mt_rand(1, 100000),
+                'reference'      => 'PUR-' . str_pad($nextNumber, 6, '0', STR_PAD_LEFT),
                 'supplier_id'    => $request->supplier_id,
                 'total_amount'   => $totalAmount,
                 'discount'       => $totalDiscount,
@@ -96,7 +100,7 @@ class PurchaseController extends Controller
             ]);
 
             $purDetailDis = count($cart) > 0 ? $purchase->discount / count($cart) : 0;
-            // Save purchase details
+
             foreach ($cart as $productId => $item) {
                 PurchaseDetail::create([
                     'purchase_id' => $purchase->id,
@@ -107,7 +111,6 @@ class PurchaseController extends Controller
                     'total_price' => ($item['price'] * $item['quantity']) - $purDetailDis,
                 ]);
 
-                // ✅ Update stock only if status is "បញ្ចប់"
                 if ($request->status == 'បញ្ចប់') {
                     $product = Product::where('id', $productId)->lockForUpdate()->first();
 
@@ -129,7 +132,6 @@ class PurchaseController extends Controller
                             ]);
                         }
 
-                        // ✅ Update product quantity
                         $product->update([
                             'quantity' => $stock->current,
                         ]);
@@ -186,8 +188,9 @@ class PurchaseController extends Controller
     public function update(Request $request, Purchase $purchase)
     {
         return DB::transaction(function () use ($request, $purchase) {
+            // Validate request data
             $request->validate([
-                'supplier_id'    => 'required',
+                'supplier_id'    => 'required|exists:suppliers,id',
                 'date'           => 'required|date',
                 'status'         => 'required|string',
                 'paid_amount'    => 'required|numeric|min:0',
@@ -203,24 +206,20 @@ class PurchaseController extends Controller
             $totalAmount   = 0;
             $totalDiscount = 0;
 
-            // ✅ Restore old stock before updating purchase
-            $oldPurchaseDetails = PurchaseDetail::where('purchase_id', $purchase->id)->get();
-            foreach ($oldPurchaseDetails as $oldItem) {
-                $product = Product::where('id', $oldItem->product_id)->lockForUpdate()->first();
-                $stock   = Stock::where('product_id', $oldItem->product_id)->lockForUpdate()->first();
-
-                if ($product) {
-                    $product->quantity -= $oldItem->quantity; // Revert previous stock update
-                    $product->save();
-                }
-
-                if ($stock) {
-                    $stock->current -= $oldItem->quantity; // Revert previous stock update
-                    $stock->save();
+            // ✅ Restore old stock before updating purchase (if it was completed before)
+            if ($purchase->status == 'បញ្ចប់') {
+                $oldPurchaseDetails = PurchaseDetail::where('purchase_id', $purchase->id)->get();
+                foreach ($oldPurchaseDetails as $oldItem) {
+                    $stock = Stock::where('product_id', $oldItem->product_id)->lockForUpdate()->first();
+                    if ($stock) {
+                        $stock->update([
+                            'current' => max(0, $stock->current - $oldItem->quantity),
+                        ]);
+                    }
                 }
             }
 
-            // ✅ Delete old purchase details
+            // ✅ Delete old purchase details before inserting new ones
             PurchaseDetail::where('purchase_id', $purchase->id)->delete();
 
             // ✅ Calculate total amount and discount
@@ -234,16 +233,13 @@ class PurchaseController extends Controller
             if ($discountType == 'percentage') {
                 $totalDiscount = ($totalAmount * $discountAmount) / 100;
             } elseif ($discountType == 'fixed') {
-                $totalDiscount = $discountAmount;
+                $totalDiscount = min($discountAmount, $totalAmount);
             }
-
-            $totalDiscount = min($totalDiscount, $totalAmount);
 
             // ✅ Update the purchase record
             $purchase->update([
                 'date'           => $request->date,
                 'supplier_id'    => $request->supplier_id,
-                'reference'      => $request->reference,
                 'total_amount'   => $totalAmount,
                 'discount'       => $totalDiscount,
                 'paid_amount'    => $request->paid_amount,
@@ -256,50 +252,40 @@ class PurchaseController extends Controller
                 'description'    => $request->description ?? 'N/A',
             ]);
 
-            // ✅ Prevent Division by Zero
+            // ✅ Recreate purchase details
             $purDetailDis = count($cart) > 0 ? $purchase->discount / count($cart) : 0;
 
             foreach ($cart as $productId => $item) {
-                // ✅ Lock product to prevent race conditions
-                $product = Product::where('id', $productId)->lockForUpdate()->first();
-                if (! $product) {
-                    return redirect()->route('purchases.edit', $purchase->id)->with('error', 'Product not found: ' . $productId);
-                }
+                PurchaseDetail::create([
+                    'purchase_id' => $purchase->id,
+                    'product_id'  => $productId,
+                    'quantity'    => $item['quantity'],
+                    'unit_price'  => $item['price'],
+                    'discount'    => $purDetailDis,
+                    'total_price' => ($item['price'] * $item['quantity']) - $purDetailDis,
+                ]);
 
-                // ✅ Update stock only if status is "បញ្ចប់"
+                // ✅ Update Stock if purchase is completed
                 if ($request->status == 'បញ្ចប់') {
-                    $stock = Stock::where('product_id', $productId)->lockForUpdate()->first();
+                    $product = Product::where('id', $productId)->lockForUpdate()->first();
 
-                    if ($stock) {
+                    if ($product) {
+                        $stock = Stock::firstOrCreate(
+                            ['product_id' => $productId],
+                            ['last_stock' => 0, 'current' => 0, 'purchase' => 0]
+                        );
+
                         $stock->update([
                             'last_stock' => $stock->current,
                             'current'    => $stock->current + $item['quantity'],
                             'purchase'   => $item['quantity'],
                         ]);
-                    } else {
-                        $stock = Stock::create([
-                            'product_id' => $productId,
-                            'last_stock' => 0,
-                            'current'    => $item['quantity'],
-                            'purchase'   => $item['quantity'],
+
+                        $product->update([
+                            'quantity' => $stock->current,
                         ]);
                     }
-
-                    // ✅ Update the product's quantity
-                    $product->update([
-                        'quantity' => $stock->current,
-                    ]);
                 }
-
-                // ✅ Insert purchase details
-                PurchaseDetail::create([
-                    'purchase_id' => $purchase->id,
-                    'product_id'  => $productId,
-                    'unit_price'  => $item['price'],
-                    'quantity'    => $item['quantity'],
-                    'discount'    => $purDetailDis,
-                    'total_price' => ($item['price'] * $item['quantity']) - $purDetailDis,
-                ]);
             }
 
             // ✅ Clear cart session
@@ -322,6 +308,7 @@ class PurchaseController extends Controller
             return redirect()->route('purchases.index')->with('success', 'ការទិញត្រូវបានកែប្រែដោយជោគជ័យ.');
         });
     }
+
     // public function update(Request $request, Purchase $purchase)
     // {
     //     $request->validate([

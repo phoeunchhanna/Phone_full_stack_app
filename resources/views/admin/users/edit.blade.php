@@ -29,7 +29,7 @@
                                 @method('PUT') <!-- PUT method for update -->
                                 <div class="row">
                                     <div class="col-12">
-                                        <h5 class="form-title student-info">ព័ត៌មានអ្នកប្រើប្រាស់
+                                        <h5 class="form-title student-info">កែប្រែអ្នកប្រើប្រាស់
                                             <span>
                                                 <!-- Back Button -->
                                                 <a href="{{ route('users.index') }}" class="btn btn-secondary">
@@ -45,14 +45,27 @@
                                                 class="text-danger">*</span></label>
                                         <input type="text" class="form-control @error('name') is-invalid @enderror"
                                             id="name" name="name" value="{{ old('name', $user->name) }}"
-                                            placeholder="បញ្ចូលឈ្មោះរបស់អ្នក" required>
+                                            placeholder="បញ្ចូលឈ្មោះរបស់អ្នក" required
+                                            oninput="check_nuber(this)">
                                         @error('name')
                                             <div class="invalid-feedback">
                                                 {{ $message }}
                                             </div>
                                         @enderror
                                     </div>
-
+                                    <div class="col-md-6 mb-3">
+                                        <label for="name" class="form-label">ឈ្មោះប្រើប្រាស់<span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('username') is-invalid @enderror"
+                                            id="username" name="username" value="{{ old('username', $user->username) }}"
+                                            placeholder="បញ្ចូលឈ្មោះប្រើប្រាស់"  
+                                            oninput="username_check_nuber(this)">
+                                        @error('name')
+                                            <div class="invalid-feedback">
+                                                {{ $message }}
+                                            </div>
+                                        @enderror
+                                    </div>
                                     <!-- Email Field -->
                                     <div class="col-md-6 mb-3">
                                         <label for="email" class="form-label">អ៊ីមែល<span
@@ -158,6 +171,43 @@
                 document.getElementById('formcreate').submit();
             }, 500);
         });
+
+         // Note allow number 
+         function check_nuber(input) {
+            const khmerDigits = /[\u17E0-\u17E9]/;
+            const onlyDigits = /^[0-9]+$/;
+            const allowedPattern = /^[\u1780-\u17FFa-zA-Z0-9\s]+$/;
+
+            if (
+                khmerDigits.test(input.value) || // contains Khmer digits
+                onlyDigits.test(input.value) || // only English digits
+                !allowedPattern.test(input.value) // contains invalid characters
+            ) {
+                input.setCustomValidity(
+                    "សូមបញ្ចូលអក្សរខ្មែរឬអង់គ្លេស ដែលអាចមានលេខភាសាអង់គ្លេសបន្តែម ប៉ុណ្ណោះ។ ហាមប្រើលេខតែឯង ឬលេខខ្មែរ។");
+            } else {
+                input.setCustomValidity("");
+            }
+        }
+
+        // check number username 
+        function username_check_nuber(input) {
+            const khmerDigits = /[\u17E0-\u17E9]/;
+            const onlyDigits = /^[0-9]+$/;
+            const allowedPattern = /^[\u1780-\u17FFa-zA-Z0-9._]+$/;
+
+            if (
+                khmerDigits.test(input.value) || // contains Khmer digits
+                onlyDigits.test(input.value) || // only English digits
+                !allowedPattern.test(input.value) // contains invalid characters
+            ) {
+                input.setCustomValidity(
+                    "សូមបញ្ចូលអក្សរខ្មែរឬអង់គ្លេស ដែលអាចមានលេខអង់គ្លេសបន្ថែមបាន។ ហាមប្រើលេខតែឯង ឬលេខខ្មែរ។"
+                );
+            } else {
+                input.setCustomValidity("");
+            }
+        }
     </script>
     <script>
         function showPreview(event) {

@@ -19,6 +19,11 @@ class SaleDetail extends Model
         'discount',
         'total_price',
     ];
+    
+    // Set default discount to 0 if not provided
+    protected $attributes = [
+        'discount' => 0,
+    ];
 
     public function sale()
     {
@@ -29,7 +34,4 @@ class SaleDetail extends Model
     {
         return $this->belongsTo(Product::class);
     }
-
-
-
 }

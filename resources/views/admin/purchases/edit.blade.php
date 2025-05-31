@@ -19,7 +19,8 @@
                 <div class="col-sm-12">
                     <div class="card">
                         <div class="card-body">
-                            <form id="purchase-form" action="{{ route('purchases.update', $purchase->id) }}" method="POST" id="formcreate">
+                            <form id="purchase-form" action="{{ route('purchases.update', $purchase->id) }}" method="POST"
+                                id="formcreate">
                                 @csrf
                                 @method('PUT') <!-- Specifies that this is an update request -->
                                 <div class="form-group d-flex align-items-center justify-content-between">
@@ -32,6 +33,14 @@
                                     </span>
                                 </div>
                                 <div class="row">
+                                    {{-- referent --}}
+                                    <div class="col-lg-3 col-md-6">
+                                        <div class="form-group">
+                                            <label for="reference">លេខយោង</label>
+                                            <input type="text" class="form-control" name="reference"
+                                                value="{{ $purchase->reference }}" readonly>
+                                        </div>
+                                    </div>
                                     {{-- Supplier --}}
                                     <div class="col-lg-3 col-md-6">
                                         <label for="supplier_id">អ្នកផ្គត់ផ្គង់ <span class="text-danger">*</span></label>
@@ -50,14 +59,6 @@
                                                 {{ $message }}
                                             </div>
                                         @enderror
-                                    </div>
-                                    {{-- referent --}}
-                                    <div class="col-lg-3 col-md-6">
-                                        <div class="form-group">
-                                            <label for="reference">លេខយោង</label>
-                                            <input type="text" class="form-control" name="reference"
-                                                value="{{ $purchase->reference }}">
-                                        </div>
                                     </div>
                                     {{-- Date --}}
                                     <div class="col-lg-3 col-md-6">
@@ -159,7 +160,8 @@
                                             <div class="col-md-6">
                                                 <div class="form-group ">
                                                     <label for="payment_method">វិធីសាស្ត្របង់ប្រាក់</label>
-                                                    <select name="payment_method" class="form-control form-select" required>
+                                                    <select name="payment_method" class="form-control form-select"
+                                                        required>
                                                         <option value="សាច់ប្រាក់"
                                                             {{ $purchase->payment_method == 'សាច់ប្រាក់' ? 'selected' : '' }}>
                                                             សាច់ប្រាក់</option>
@@ -174,7 +176,6 @@
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
-                                                {{-- <input type="hidden" id="total_price" value="{{ $totalPrice ?? 0 }} $"> --}}
                                                 <div class="form-group">
                                                     <label for="paid_amount">ចំនួនប្រាក់ដែលបានបង់</label>
                                                     <input type="number" name="paid_amount" id="paid_amount"
@@ -183,46 +184,50 @@
                                                         required>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-4 col-md-6">
-                                        <div class="invoice-total-card">
-                                            <div class="invoice-total-box">
-                                                <div class="invoice-total-inner">
-                                                    <p class="totalPrice">តម្លៃសរុប<span class="total_price">0.00
-                                                            $</span></p>
-
-                                                    <p class="totalPrice">ចំនួនទឹកប្រាក់បញ្ចុះតម្លៃ<span
-                                                            id="display_due_amount">{{ $sale->discount ?? '0.00 $' }}
-                                                            $</span></p>
-                                                </div>
-                                                <div class="invoice-total-footer">
-                                                    <h4 class="grandTotal">ទឹកប្រាក់សរុប <span
-                                                            id="display_grandTotal">0.00 $</span></h4>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="description">ចំណាំ</label>
+                                                    <textarea name="description" id="description" class="form-control" placeholder="ចំណាំ" rows="3"></textarea>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="row justify-content-md-end">
-                                    <div class="col-md-4">
-
-                                        <div class="invoice-total-card">
-
-                                            <div class="invoice-total-inner">
-                                                <h5 class="change_return_span d-flex justify-content-between">
-                                                    <span>ចំនួនទឹកប្រាក់នៅសល់</span>
-                                                    <span id="due_amount">{{ $sale->due_amount ?? '0.00 $' }}</span>
-                                                </h5>
-                                                <input class="form-control change_return input_number" required
-                                                    name="due_amount" id="due_amount" type="hidden" value="0.00">
+                                    <div class="col-lg-4 col-md-6">
+                                        <div class="invoice-total-card rounded-lg p-4 bg-white">
+                                            <div class="invoice-total-box">
+                                                <div class="invoice-total-inner border-bottom pb-3">
+                                                    <p class="totalPrice d-flex justify-content-between">
+                                                        <span>តម្លៃសរុប (Total Price)</span>
+                                                        <span class="total_price fw-bold">$ 0.00</span>
+                                                    </p>
+                                                    <p class="totalPrice d-flex justify-content-between">
+                                                        <span>បញ្ចុះតម្លៃ (Discount)</span>
+                                                        <span id="display_due_amount" class="fw-bold">$ 0.00</span>
+                                                    </p>
+                                                </div>
+                                                <div class="invoice-total-footer py-3 border-bottom">
+                                                    <h4
+                                                        class="grandTotal d-flex justify-content-between fw-bold text-primary">
+                                                        <span>ទឹកប្រាក់សរុប (Grand Total)</span>
+                                                        <span id="display_grandTotal">$ 0.00</span>
+                                                    </h4>
+                                                </div>
+                                                <div class="invoice-total-inner pt-3">
+                                                    <p class="due_amount d-flex justify-content-between">
+                                                        <span>ចំនួនទឹកប្រាក់នៅខ្វះ (Due Amount)</span>
+                                                        <span class="fw-bold" id="due_amount">$ 0.00</span>
+                                                    </p>
+                                                    <input class="form-control change_return input_number" required
+                                                        name="due_amount" id="due_amount" type="hidden"
+                                                        value="0.00">
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 {{-- Submit and Cancel Buttons --}}
-                                <div class="mt-3 d-flex justify-content-end">
-                                    <div class="form-group mt-4">
+                                <div class="d-flex justify-content-end">
+                                    <div class="form-group">
                                         <button type="submit" class="btn btn-primary btn-lg" id="saveButton">រក្សាទុក<i
                                                 class="bi bi-check-lg"></i></button>
                                         <button class="btn btn-primary btn-lg" type="button" disabled=""
@@ -275,7 +280,6 @@
                 } else if (discountType === "fixed") {
                     if (discountAmount > totalAmount) {
                         discountAmount = 0;
-                        toastr.warning("ការបញ្ចុះតម្លៃជាទឹកប្រាក់មិនអាចលើសពីចំនួនទឹកប្រាក់សរុបបានទេ។");
                         $("#discount_amount").val(discountAmount);
                     }
                     totalDiscount = discountAmount;
@@ -366,7 +370,7 @@
                             $("#totalPrice").text(response.totalPrice || "0.00");
 
                             if (response.cartItems && response.cartItems.length > 0) {
-                                $("#btnsave").prop("disabled", false);
+                                $("#saveButton").prop("disabled", false);
                                 $.each(response.cartItems, function(index, item) {
                                     const itemTotal = (item.quantity * item.price).toFixed(2);
                                     total += parseFloat(itemTotal);
@@ -387,13 +391,14 @@
                                     `);
                                 });
                             } else {
-                                $("#btnsave").prop("disabled", true);
+                                $("#paid_amount").val("");
+                                $("#saveButton").prop("disabled", true);
                                 cartBody.append(`
                                     <tr>
                                         <td colspan="6" class="text-center "><h5 class="text-danger">គ្មានទិន្នន័យ</h5></td>
                                     </tr>
                                 `);
-
+                                calculateDiscount();
                             }
                             $(".total_price").text(`${total.toFixed(2)} $`);
                             $("#display_grandTotal").text(total.toFixed(2));

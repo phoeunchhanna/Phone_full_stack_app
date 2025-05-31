@@ -45,17 +45,28 @@
                                             </span>
                                         @enderror
                                     </div>
+                                   
                                     <div class="form-group">
-                                        <label for="phone">លេខទូរស័ព្ទ<span class="login-danger">*</label>
-                                            <input type="text" class="form-control @error('phone') is-invalid @enderror" 
-                                            id="phone" name="phone" value="" 
-                                            placeholder="បញ្ចូលលេខទូរស័ព្ទ" required>
+                                        <label for="phone">លេខទូរស័ព្ទ<span class="login-danger">*</span></label>
+                                        <input type="text" 
+                                               class="form-control @error('phone') is-invalid @enderror" 
+                                               id="phone" 
+                                               name="phone" 
+                                               value="{{ old('phone') }}" 
+                                               placeholder="បញ្ចូលលេខទូរស័ព្ទ" 
+                                               required 
+                                               pattern="^[0-9]{9,10}$" 
+                                               inputmode="numeric"
+                                               maxlength="10"
+                                               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);">
                                         @error('phone')
                                             <span class="invalid-feedback" role="alert">
                                                 <strong>{{ $message }}</strong>
                                             </span>
                                         @enderror
                                     </div>
+                                    
+                                    
                                     <div class="form-group">
                                         <label for="address">អាសយដ្ឋាន<span class="login-danger">*</label>
                                             <input type="text" class="form-control @error('address') is-invalid @enderror" 

@@ -7,17 +7,17 @@
     <div class="login-right-wrap">
         <h1 class="text-primary">សូមស្វាគមន៍!</h1>
         {{-- <p class="account-subtitle">ត្រូវការគណនីមែនទេ? <a href="{{ route('register') }}">ចុះឈ្មោះ</a></p> --}}
-        <h2>ចូលគណនី</h2>
+        <h2>ចូលប្រព័ន្ធ</h2>
         <form action="{{ route('login') }}" method="POST">
             @csrf
-            <label for="email">អ៊ីមែល <span class="login-danger">*</span></label>
+            <label for="email">ឈ្មោះអ្នកប្រើប្រាស់ ឬ អ៊ីមែល <span class="login-danger">*</span></label>
             <div class="form-group">
                 <input 
-                    type="email" 
+                    type="type" 
                     id="email" 
                     class="form-control @error('email') is-invalid @enderror" 
                     name="email" 
-                    value="{{ old('email') }}" placeholder="បញ្ចូលអ៊ីមែល"
+                    value="{{ old('email') }}" placeholder="បញ្ចូលឈ្មោះអ្នកប្រើប្រាស់ ឬ អ៊ីមែល"
                     required>
                 @error('email')
                     <div class="invalid-feedback">{{ $message }}</div>

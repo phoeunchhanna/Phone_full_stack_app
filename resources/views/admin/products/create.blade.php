@@ -43,7 +43,8 @@
                                                     <input type="text"
                                                         class="form-control @error('name') is-invalid @enderror"
                                                         id="name" name="name" value="{{ old('name') }}"
-                                                        placeholder="បញ្ចូលឈ្មោះផលិតផល" required>
+                                                        placeholder="បញ្ចូលឈ្មោះផលិតផល" required 
+                                                        oninput="check_nuber(this)">
 
                                                     @error('name')
                                                         <span class="invalid-feedback" role="alert">
@@ -189,13 +190,13 @@
                                         </button>
                                     </div>
                                 </div>
-                            </div>
                         </div>
                     </div>
                 </div>
-                </form>
             </div>
+            </form>
         </div>
+    </div>
     </div>
     @include('admin.categories.modal.create')
     @include('admin.brands.modal.create')
@@ -235,6 +236,25 @@
                     document.getElementById('product-image-preview').src = e.target.result;
                 };
                 reader.readAsDataURL(file);
+            }
+        }
+
+        // Note allow number 
+        function check_nuber(input) {
+            const khmerDigitsOnly = /^[\u17E0-\u17E9]+$/; // only Khmer digits
+            const allowedPattern = /^[\u1780-\u17FFa-zA-Z0-9\s]+$/; // valid characters
+
+            const containsLetter = /[\u1780-\u17A2a-zA-Z]/.test(input.value); // at least one Khmer or English letter
+
+            if (
+                khmerDigitsOnly.test(input.value) || // only Khmer digits
+                !allowedPattern.test(input.value) || // contains invalid characters
+                !containsLetter // no letters at all
+            ) {
+                input.setCustomValidity(
+                    "សូមបញ្ចូលអក្សរខ្មែរឬអង់គ្លេស។ អាចមានលេខអង់គ្លេស ឬខ្មែរបាន ប៉ុន្តែហាមប្រើលេខតែឯង។");
+            } else {
+                input.setCustomValidity("");
             }
         }
     </script>

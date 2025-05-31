@@ -52,7 +52,8 @@ class ProductController extends Controller
     {
         // Validate input fields
         $request->validate([
-            'name'          => ['required', 'string'],
+            'name'          => ['required', 'string'],// Allow Khmer or English letters (must include at least one letter), may include English digits, but reject if only digits or contains Khmer digits
+            'regex:/^(?=.*[\x{1780}-\x{17A2}a-zA-Z])(?!^[\x{17E0}-\x{17E9}0-9\s]+$)[\x{1780}-\x{17FF}a-zA-Z0-9\s]+$/u',
             'code'          => 'nullable|string|unique:products,code',
             'cost_price'    => 'required|numeric',
             'selling_price' => 'required|numeric',
@@ -115,64 +116,7 @@ class ProductController extends Controller
         return redirect()->route('products.index')->with('success', 'ទិន្នន័យបន្ថែមដោយជោគជ័យ។');
     }
 
-    // public function store(Request $request)
-    // {
-    //     $request->validate([
-    //         'name'          => ['required', 'string', Rule::unique('products', 'name')],
-    //         'code'          => 'nullable|string|unique:products,code',
-    //         'cost_price'    => 'required|numeric',
-    //         'selling_price' => 'required|numeric',
-    //         'stock_alert'   => 'required|integer',
-    //         'image'         => 'nullable|image|mimes:jpg,png,jpeg,gif,svg|max:2048',
-    //         'condition'     => 'nullable|string',
-    //         'description'   => 'nullable|string',
-    //         'category_id'   => 'required|integer',
-    //         'brand_id'      => 'nullable|integer',
-    //     ], [
-    //         'name.unique' => 'ផលិតផលនេះមានរួចហើយ។',
-    //         'code.unique' => 'បាកូដនេះមានរួចហើយ។',
-    //     ]);
 
-    //     // Create new Product and Stock instances
-    //     $product = new Product();
-    //     $stocks  = new Stock();
-
-    //     // Handle image upload
-    //     if ($request->hasFile('image')) {
-    //         $fileExtension  = $request->file('image')->getClientOriginalExtension();
-    //         $fileName       = time() . '.' . $fileExtension;
-    //         $imagePath      = $request->file('image')->storeAs('uploads', $fileName, 'public');
-    //         $product->image = $imagePath;
-    //     } else {
-    //         $product->image = 'uploads/default.png';
-    //     }
-
-    //     // Store product data
-    //     $product->code          = $request->code ?? str_pad(mt_rand(1, 9999999999), 10, '0', STR_PAD_LEFT);
-    //     $product->name          = $request->name;
-    //     $product->cost_price    = $request->cost_price;
-    //     $product->selling_price = $request->selling_price;
-    //     $product->quantity      = $request->quantity ?? 0;
-    //     $product->stock_alert   = $request->stock_alert;
-    //     $product->condition     = $request->condition ?? 'ថ្មី';
-    //     $product->description   = $request->description ?? 'N/A';
-    //     $product->category_id   = $request->category_id;
-    //     $product->brand_id      = $request->brand_id;
-
-    //     // Save the product
-    //     $product->save();
-
-    //     // Save stock data
-    //     $stocks->product_id = $product->id;
-    //     $stocks->last_stock = $request->input('last_stock', 0);
-    //     $stocks->date       = now();
-    //     $stocks->purchase   = 0;
-    //     $stocks->current    = $stocks->purchase + $stocks->last_stock;
-    //     $stocks->save();
-
-    //     // Redirect with success message
-    //     return redirect()->route('products.index')->with('success', 'ទិន្នន័យបន្ថែមដោយជោគជ័យ។');
-    // }
 
     public function edit(Product $product)
     {
@@ -195,7 +139,9 @@ class ProductController extends Controller
     {
         // Validate the input data
         $request->validate([
-            'name'          => ['required', 'string'],
+            'name'          => ['required', 'string'],// Allow Khmer or English letters (must include at least one letter), may include English digits, but reject if only digits or contains Khmer digits
+            'regex:/^(?=.*[\x{1780}-\x{17A2}a-zA-Z])(?!^[\x{17E0}-\x{17E9}0-9\s]+$)[\x{1780}-\x{17FF}a-zA-Z0-9\s]+$/u',
+            'code'          => 'required|string|unique:products,code,' . $product->id,
             'cost_price'    => 'required|numeric',
             'selling_price' => 'required|numeric',
             'stock_alert'   => 'required|integer',
@@ -207,6 +153,7 @@ class ProductController extends Controller
         ], [
             'name.required'      => 'សូមបញ្ចូលឈ្មោះផលិតផល។',
             'condition.required' => 'សូមបញ្ចូលស្ថានភាពផលិតផល។',
+            'code.unique'        => 'បាកូដនេះមានរួចហើយ។',
         ]);
 
         $existingProduct = Product::where('name', $request->name)
@@ -232,6 +179,7 @@ class ProductController extends Controller
         // Update product data
         $product->update([
             'name'          => $request->name,
+            'code'          => $request->code,
             'cost_price'    => $request->cost_price,
             'selling_price' => $request->selling_price,
             'stock_alert'   => $request->stock_alert,

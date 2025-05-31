@@ -12,10 +12,29 @@ use App\Models\Stock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
 
 class SaleReturnController extends Controller
 {
+    public function __construct()
+    {
+        $permissions = [
+            'index'   => 'បញ្ជីការបង្វែចូលទំនិញ',
+            'create'  => 'បង្កើតការបង្វែចូលទំនិញ',
+            'edit'    => 'កែរប្រែការបង្វែចូលទំនិញ',
+            'destroy' => 'លុបការបង្វែចូលទំនិញ',
 
+        ];
+
+        foreach ($permissions as $method => $permission) {
+            $this->middleware(function ($request, $next) use ($permission) {
+                if (! auth()->user()->can($permission)) {
+                    return back()->with('error', 'អ្នកមិនមានសិទ្ធិចូលប្រើទំព័រនេះទេ!');
+                }
+                return $next($request);
+            })->only($method);
+        }
+    }
     public function index()
     {
         Session::forget('cart');
@@ -51,18 +70,19 @@ class SaleReturnController extends Controller
             } elseif ($discountType == 'fixed') {
                 $totalDiscount = min($discountAmount, $totalAmount);
             }
-
+            $latestSaleReturn = SaleReturn::latest()->first();
+            $nextNumber       = $latestSaleReturn ? $latestSaleReturn->id + 1 : 1;
             // Step 2: Create Sale Return Record
             $saleReturn = SaleReturn::create([
                 'date'           => $request->date,
-                'reference'      => 'SR-' . mt_rand(10000, 99999),
+                'reference'      => 'SLR-' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT),
                 'customer_id'    => $request->customer_id,
                 'sale_id'        => $request->sale_id,
                 'total_amount'   => $totalAmount,
                 'discount'       => $totalDiscount,
                 'paid_amount'    => $request->paid_amount,
                 'due_amount'     => $totalAmount - $totalDiscount - $request->paid_amount,
-                'status'         => $request->status ?? 'បញ្ចប់',
+                'status'         => 'បញ្ចប់',
                 'payment_method' => $request->payment_method,
                 'payment_status' => $request->paid_amount >= ($totalAmount - $totalDiscount)
                 ? 'បានទូទាត់រួច'
@@ -83,49 +103,40 @@ class SaleReturnController extends Controller
                 if ($saleDetail) {
                     $saleDetail->quantity -= $quantity;
                     $saleDetail->total_price -= ($unitPrice * $quantity);
-
                     if ($saleDetail->quantity <= 0) {
                         $saleDetail->delete();
                     } else {
                         $saleDetail->save();
                     }
                 }
-
                 // Create Sale Return Detail
                 SaleReturnDetail::create([
                     'sale_return_id' => $saleReturn->id,
                     'product_id'     => $productId,
                     'quantity'       => $quantity,
+                    'sold_quantity'  => $saleDetail ? $saleDetail->quantity + $quantity : $quantity,
                     'unit_price'     => $unitPrice,
                     'discount'       => ($totalDiscount / count($cart)), // Distribute discount evenly
                     'total_price'    => ($unitPrice * $quantity) - ($totalDiscount / count($cart)),
                 ]);
-
-                // Update Stock if Sale Return is Completed
-                if ($request->status == 'បញ្ចប់') {
-                    $product = Product::find($productId);
-                    if ($product) {
-                        $stock = Stock::where('product_id', $productId)->first();
-
-                        if ($stock) {
-                            $stock->update([
-                                'last_stock' => $stock->current,
-                                'current'    => $stock->current + $quantity,
-                                'purchase'   => $quantity,
-                            ]);
-                        } else {
-                            $stock = Stock::create([
-                                'product_id' => $productId,
-                                'last_stock' => 0,
-                                'current'    => $quantity,
-                                'purchase'   => $quantity,
-                            ]);
-                        }
-
-                        // Update product quantity
-                        $product->quantity = $stock->current;
-                        $product->save();
-                    }
+                $stock = Stock::where('product_id', $productId)->first();
+                if ($stock) {
+                    // Increase stock by the quantity returned
+                    $stock->current += $quantity;
+                    $stock->save();
+                } else {
+                    // If no stock exists, create new stock record
+                    Stock::create([
+                        'product_id' => $productId,
+                        'last_stock' => 0,
+                        'current'    => $quantity,
+                        'purchase'   => $quantity,
+                    ]);
+                }
+                $product = Product::find($productId);
+                if ($product) {
+                    $product->quantity = $stock->current; // Update product quantity in stock
+                    $product->save();
                 }
             }
 
@@ -134,7 +145,6 @@ class SaleReturnController extends Controller
             if ($sale) {
                 $returnAmount = $saleReturn->total_amount;
 
-                // Update Sale total_amount & due_amount
                 $sale->total_amount -= $returnAmount;
                 $sale->due_amount -= $returnAmount;
 
@@ -146,7 +156,8 @@ class SaleReturnController extends Controller
                 } else {
                     $sale->payment_status = 'មិនទាន់បានទូទាត់';
                 }
-
+                // $sale->payment_status = 'បានបង្វិលចូលទំនិញ';
+                $sale->description = 'បានបង្វែចូលទំនិញចំនួន ' . $quantity;
                 $sale->save();
             }
 
@@ -190,8 +201,8 @@ class SaleReturnController extends Controller
                 'id'            => $product->id,
                 'name'          => $product->name,
                 'price'         => $SaleReturnDetail->unit_price,
-                'quantity'      => 0,
-                'sale_quantity' => $SaleReturnDetail->quantity,
+                'quantity'      => $SaleReturnDetail->quantity,
+                'sale_quantity' => $SaleReturnDetail->sold_quantity,
                 'total'         => ($SaleReturnDetail->unit_price * $SaleReturnDetail->quantity) - $SaleReturnDetail->discount,
             ];
         }
@@ -202,24 +213,22 @@ class SaleReturnController extends Controller
 
         return view('admin.sale_returns.edit', compact('customers', 'saleReturn', 'discountType', 'SaleReturnDetails', 'discountAmount'));
     }
-    public function update(Request $request, SaleReturn $saleReturn)
+    public function update(Request $request, $id)
     {
-        return DB::transaction(function () use ($request, $saleReturn) {
-            $cart = Session::get('cart', []);
+        $saleReturn = SaleReturn::findOrFail($id);
+        $cart       = Session::get('cart', []);
 
-            if (empty($cart)) {
-                return redirect()->route('sales.index')->with('error', 'គ្មានទិន្នន័យ');
-            }
+        if (empty($cart)) {
+            return redirect()->route('sales.index')->with('error', 'គ្មានទិន្នន័យ');
+        }
 
-            // Store previous total and paid amounts
-            $previousTotalAmount = $saleReturn->total_amount;
-            $previousPaidAmount  = $saleReturn->paid_amount;
-
-            // Step 1: Calculate New Total Amount & Discount
+        return DB::transaction(function () use ($request, $cart, $saleReturn) {
+            // Step 1: Calculate Total Amount & Discount
             $totalAmount = 0;
             foreach ($cart as $item) {
                 $totalAmount += $item['quantity'] * $item['price'];
             }
+
             $discountType   = $request->discount_type;
             $discountAmount = $request->discount_amount;
             $totalDiscount  = 0;
@@ -227,124 +236,265 @@ class SaleReturnController extends Controller
             if ($discountType == 'percentage') {
                 $totalDiscount = ($totalAmount * $discountAmount) / 100;
             } elseif ($discountType == 'fixed') {
-                $totalDiscount = $discountAmount;
+                $totalDiscount = min($discountAmount, $totalAmount);
             }
-
-            $totalDiscount = min($totalDiscount, $totalAmount);
 
             // Step 2: Update Sale Return Record
             $saleReturn->update([
                 'date'           => $request->date,
                 'customer_id'    => $request->customer_id,
-                'sale_id'        => $request->sale_id,
                 'total_amount'   => $totalAmount,
                 'discount'       => $totalDiscount,
                 'paid_amount'    => $request->paid_amount,
                 'due_amount'     => $totalAmount - $totalDiscount - $request->paid_amount,
-                'status'         => $request->status ?? 'កំពុងរង់ចាំ',
+                'status'         => 'បញ្ចប់',
                 'payment_method' => $request->payment_method,
-                'payment_status' => ($request->paid_amount >= $totalAmount - $totalDiscount)
-                ? 'បានបង់'
-                : ($request->paid_amount > 0 ? 'បានបង់ខ្លះ' : 'មិនទាន់បង់'),
+                'payment_status' => $request->paid_amount >= ($totalAmount - $totalDiscount)
+                ? 'បានទូទាត់រួច'
+                : ($request->paid_amount > 0 ? 'បានទូទាត់ខ្លះ' : 'មិនទាន់បានទូទាត់'),
                 'reason'         => $request->reason ?? 'N/A',
             ]);
 
-            // Step 4: Delete Old SaleReturnDetail Records
-            $saleReturn->details()->delete();
-
-            // Step 3: Reverse Previous Stock Changes (if applicable)
-            foreach ($saleReturn->details as $detail) {
-                if ($saleReturn->status == 'បញ្ចប់') {
-                    $product = Product::find($detail->product_id);
-                    if ($product) {
-                        $stock = Stock::where('product_id', $detail->product_id)->first();
-                        if ($stock) {
-                            $stock->update([
-                                'current' => $stock->current - $detail->quantity, // Reverse previous stock update
-                            ]);
-                        }
-                    }
-                }
-            }
-
-            // Step 4: Delete Old SaleReturnDetail Records
-            $saleReturn->details()->delete();
-
-            // Step 5: Insert New SaleReturnDetail Records & Update Stock
+            // Step 3: Process Each Product Return
             foreach ($cart as $productId => $item) {
-                SaleReturnDetail::create([
-                    'sale_return_id' => $saleReturn->id,
-                    'product_id'     => $productId,
-                    'quantity'       => $item['quantity'],
-                    'unit_price'     => $item['price'],
-                    'discount'       => ($totalDiscount / count($cart)), // Distribute discount evenly
-                    'total_price'    => ($item['price'] * $item['quantity']) - ($totalDiscount / count($cart)),
-                ]);
+                $quantity  = $item['quantity'];
+                $unitPrice = $item['price'];
 
-                if ($request->status == 'បញ្ចប់') {
-                    $product = Product::find($productId);
-                    if ($product) {
-                        $stock = Stock::where('product_id', $productId)->first();
+                // Update Sale Detail
+                $saleDetail = SaleDetail::where('sale_id', $saleReturn->sale_id)
+                    ->where('product_id', $productId)
+                    ->first();
 
-                        if ($stock) {
-                            $stock->update([
-                                'last_stock' => $stock->current,
-                                'current'    => $stock->current + $item['quantity'],
-                                'purchase'   => $item['quantity'],
-                            ]);
-                        } else {
-                            Stock::create([
-                                'product_id' => $productId,
-                                'last_stock' => 0,
-                                'current'    => $item['quantity'],
-                                'purchase'   => $item['quantity'],
-                            ]);
-                        }
-
-                        $product->quantity = $stock->current;
-                        $product->save();
+                if ($saleDetail) {
+                    $saleDetail->quantity -= $quantity;
+                    $saleDetail->total_price -= ($unitPrice * $quantity);
+                    if ($saleDetail->quantity <= 0) {
+                        $saleDetail->delete();
+                    } else {
+                        $saleDetail->save();
                     }
+                }
+
+                // Create or Update Sale Return Detail
+                $saleReturnDetail = SaleReturnDetail::updateOrCreate(
+                    [
+                        'sale_return_id' => $saleReturn->id,
+                        'product_id'     => $productId,
+                    ],
+                    [
+                        'quantity'      => $quantity,
+                        'sold_quantity' => $saleDetail ? $saleDetail->quantity + $quantity : $quantity,
+                        'unit_price'    => $unitPrice,
+                        'discount'      => ($totalDiscount / count($cart)), // Distribute discount evenly
+                        'total_price'   => ($unitPrice * $quantity) - ($totalDiscount / count($cart)),
+                    ]
+                );
+
+                $stock = Stock::where('product_id', $productId)->first();
+                if ($stock) {
+                    $stock->current += $quantity;
+                    $stock->save();
+                } else {
+                    // If no stock exists, create new stock record
+                    Stock::create([
+                        'product_id' => $productId,
+                        'last_stock' => 0,
+                        'current'    => $quantity,
+                        'purchase'   => $quantity,
+                    ]);
+                }
+
+                // Update Product Quantity
+                $product = Product::find($productId);
+                if ($product) {
+                    $product->quantity = $stock->current;
+                    $product->save();
                 }
             }
 
-            // Step 6: Update or Create Sale Return Payment
-            SaleReturnPayment::updateOrCreate(
-                ['sale_return_id' => $saleReturn->id],
-                [
-                    'date'           => $request->date,
-                    'reference'      => 'SRINV/' . $saleReturn->reference,
-                    'amount'         => $saleReturn->paid_amount,
-                    'payment_method' => $request->payment_method,
-                ]
-            );
-
-            // Step 7: Update Related Sale (if applicable)
-            $sale = Sale::find($request->sale_id);
+            // Step 4: Update the Related Sale
+            $sale = Sale::find($saleReturn->sale_id);
             if ($sale) {
-                $returnAmountChange = $totalAmount - $previousTotalAmount;
+                $returnAmount = $saleReturn->total_amount;
 
-                // Update Sale total_amount & due_amount
-                $sale->total_amount += $returnAmountChange;
-                $sale->due_amount += $returnAmountChange;
+                $sale->total_amount -= $returnAmount;
+                $sale->due_amount -= $returnAmount;
 
-                // Update payment_status
-                if ($sale->due_amount <= 0) {
-                    $sale->payment_status = 'បានបង់';
-                } elseif ($sale->due_amount > 0 && $sale->paid_amount > 0) {
-                    $sale->payment_status = 'បានបង់ខ្លះ';
-                } else {
-                    $sale->payment_status = 'មិនទាន់បង់';
-                }
-
+                // // Update payment_status
+                // if ($sale->due_amount <= 0) {
+                //     $sale->payment_status = 'បានទូទាត់រួច';
+                // } elseif ($sale->due_amount > 0 && $sale->paid_amount > 0) {
+                //     $sale->payment_status = 'បានទូទាត់ខ្លះ';
+                // } else {
+                //     $sale->payment_status = 'មិនទាន់បានទូទាត់';
+                // }
+                $sale->payment_status = 'បានបង្វិលចូលទំនិញ';
                 $sale->save();
             }
 
-            // Step 8: Clear Session Cart & Redirect
-            Session::forget('cart');
+            // Step 5: Create Sale Return Payment if Amount is Paid
+            if ($saleReturn->paid_amount > 0) {
+                SaleReturnPayment::updateOrCreate(
+                    ['sale_return_id' => $saleReturn->id],
+                    [
+                        'date'           => $request->date,
+                        'reference'      => 'SRINV/' . $saleReturn->reference,
+                        'amount'         => $saleReturn->paid_amount,
+                        'payment_method' => $request->payment_method,
+                    ]
+                );
+            }
 
-            return redirect()->route('sale-returns.index')->with('success', 'ការត្រឡប់ការលក់ត្រូវបានធ្វើបច្ចុប្បន្នភាពដោយជោគជ័យ។');
+            // Step 6: Clear Session Cart
+            Session::forget('cart');
+            session()->flash('sale_return_id', $saleReturn->id);
+            return redirect()->route('sale-returns.index')->with('success', 'ការត្រឡប់ការលក់បានកែប្រែជោគជ័យ។');
         });
     }
+
+    // public function update(Request $request, SaleReturn $saleReturn)
+    // {
+    //     return DB::transaction(function () use ($request, $saleReturn) {
+    //         $cart = Session::get('cart', []);
+
+    //         if (empty($cart)) {
+    //             return redirect()->route('sales.index')->with('error', 'គ្មានទិន្នន័យ');
+    //         }
+
+    //         // Store previous total and paid amounts
+    //         $previousTotalAmount = $saleReturn->total_amount;
+    //         $previousPaidAmount  = $saleReturn->paid_amount;
+
+    //         // Step 1: Calculate New Total Amount & Discount
+    //         $totalAmount = 0;
+    //         foreach ($cart as $item) {
+    //             $totalAmount += $item['quantity'] * $item['price'];
+    //         }
+    //         $discountType   = $request->discount_type;
+    //         $discountAmount = $request->discount_amount;
+    //         $totalDiscount  = 0;
+
+    //         if ($discountType == 'percentage') {
+    //             $totalDiscount = ($totalAmount * $discountAmount) / 100;
+    //         } elseif ($discountType == 'fixed') {
+    //             $totalDiscount = $discountAmount;
+    //         }
+
+    //         $totalDiscount = min($totalDiscount, $totalAmount);
+
+    //         // Step 2: Update Sale Return Record
+    //         $saleReturn->update([
+    //             'date'           => $request->date,
+    //             'customer_id'    => $request->customer_id,
+    //             'sale_id'        => $request->sale_id,
+    //             'total_amount'   => $totalAmount,
+    //             'discount'       => $totalDiscount,
+    //             'paid_amount'    => $request->paid_amount,
+    //             'due_amount'     => $totalAmount - $totalDiscount - $request->paid_amount,
+    //             'status'         => $request->status ?? 'កំពុងរង់ចាំ',
+    //             'payment_method' => $request->payment_method,
+    //             'payment_status' => ($request->paid_amount >= $totalAmount - $totalDiscount)
+    //             ? 'បានបង់'
+    //             : ($request->paid_amount > 0 ? 'បានបង់ខ្លះ' : 'មិនទាន់បង់'),
+    //             'reason'         => $request->reason ?? 'N/A',
+    //         ]);
+
+    //         // Step 4: Delete Old SaleReturnDetail Records
+    //         $saleReturn->details()->delete();
+
+    //         // Step 3: Reverse Previous Stock Changes (if applicable)
+    //         foreach ($saleReturn->details as $detail) {
+    //             if ($saleReturn->status == 'បញ្ចប់') {
+    //                 $product = Product::find($detail->product_id);
+    //                 if ($product) {
+    //                     $stock = Stock::where('product_id', $detail->product_id)->first();
+    //                     if ($stock) {
+    //                         $stock->update([
+    //                             'current' => $stock->current - $detail->quantity, // Reverse previous stock update
+    //                         ]);
+    //                     }
+    //                 }
+    //             }
+    //         }
+
+    //         // Step 4: Delete Old SaleReturnDetail Records
+    //         $saleReturn->details()->delete();
+
+    //         // Step 5: Insert New SaleReturnDetail Records & Update Stock
+    //         foreach ($cart as $productId => $item) {
+    //             SaleReturnDetail::create([
+    //                 'sale_return_id' => $saleReturn->id,
+    //                 'product_id'     => $productId,
+    //                 'quantity'       => $item['quantity'],
+    //                 'unit_price'     => $item['price'],
+    //                 'discount'       => ($totalDiscount / count($cart)), // Distribute discount evenly
+    //                 'total_price'    => ($item['price'] * $item['quantity']) - ($totalDiscount / count($cart)),
+    //             ]);
+
+    //             if ($request->status == 'បញ្ចប់') {
+    //                 $product = Product::find($productId);
+    //                 if ($product) {
+    //                     $stock = Stock::where('product_id', $productId)->first();
+
+    //                     if ($stock) {
+    //                         $stock->update([
+    //                             'last_stock' => $stock->current,
+    //                             'current'    => $stock->current + $item['quantity'],
+    //                             'purchase'   => $item['quantity'],
+    //                         ]);
+    //                     } else {
+    //                         Stock::create([
+    //                             'product_id' => $productId,
+    //                             'last_stock' => 0,
+    //                             'current'    => $item['quantity'],
+    //                             'purchase'   => $item['quantity'],
+    //                         ]);
+    //                     }
+
+    //                     $product->quantity = $stock->current;
+    //                     $product->save();
+    //                 }
+    //             }
+    //         }
+
+    //         // Step 6: Update or Create Sale Return Payment
+    //         SaleReturnPayment::updateOrCreate(
+    //             ['sale_return_id' => $saleReturn->id],
+    //             [
+    //                 'date'           => $request->date,
+    //                 'reference'      => 'SRINV/' . $saleReturn->reference,
+    //                 'amount'         => $saleReturn->paid_amount,
+    //                 'payment_method' => $request->payment_method,
+    //             ]
+    //         );
+
+    //         // Step 7: Update Related Sale (if applicable)
+    //         $sale = Sale::find($request->sale_id);
+    //         if ($sale) {
+    //             $returnAmountChange = $totalAmount - $previousTotalAmount;
+
+    //             // Update Sale total_amount & due_amount
+    //             $sale->total_amount += $returnAmountChange;
+    //             $sale->due_amount += $returnAmountChange;
+
+    //             // Update payment_status
+    //             if ($sale->due_amount <= 0) {
+    //                 $sale->payment_status = 'បានបង់';
+    //             } elseif ($sale->due_amount > 0 && $sale->paid_amount > 0) {
+    //                 $sale->payment_status = 'បានបង់ខ្លះ';
+    //             } else {
+    //                 $sale->payment_status = 'មិនទាន់បង់';
+    //             }
+
+    //             $sale->save();
+    //         }
+
+    //         // Step 8: Clear Session Cart & Redirect
+    //         Session::forget('cart');
+
+    //         return redirect()->route('sale-returns.index')->with('success', 'ការត្រឡប់ការលក់ត្រូវបានធ្វើបច្ចុប្បន្នភាពដោយជោគជ័យ។');
+    //     });
+    // }
     public function destroy(SaleReturn $saleReturn)
     {
         return DB::transaction(function () use ($saleReturn) {
@@ -440,19 +590,13 @@ class SaleReturnController extends Controller
     }
     public function getSaleDetails(Request $request)
     {
-        $request->validate([
-            'sale_reference' => 'required|string|exists:sales,reference',
-        ]);
 
         $sale = Sale::where('reference', $request->sale_reference)
             ->with(['saleDetails.product'])
             ->first();
 
         if (! $sale) {
-            return response()->json([
-                'status'  => 404,
-                'message' => 'Sale not found!',
-            ]);
+            return redirect()->back()->with('error', 'លេខយោងមិនត្រឹមត្រូវ សូមព្យាយាមម្តងទៀត');
         }
 
         session()->forget('cart');

@@ -38951,3 +38951,44 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
 /******/ 	
 /******/ })()
 ;
+
+
+// user page javascript
+
+// Initialize Bootstrap tooltips and popovers
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+})
+
+// Handle dropdown submenus
+document.querySelectorAll('.dropdown-submenu a.dropdown-toggle').forEach(function(element) {
+    element.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        var submenu = this.nextElementSibling;
+        var isShowing = submenu.classList.contains('show');
+        
+        // Close all other submenus first
+        document.querySelectorAll('.dropdown-submenu .dropdown-menu').forEach(function(menu) {
+            menu.classList.remove('show');
+        });
+        
+        if (!isShowing) {
+            submenu.classList.add('show');
+        }
+    });
+});
+
+// Close submenus when clicking outside
+document.addEventListener('click', function() {
+    document.querySelectorAll('.dropdown-submenu .dropdown-menu').forEach(function(menu) {
+        menu.classList.remove('show');
+    });
+});
+
+// Mobile menu toggle
+document.querySelector('.navbar-toggler').addEventListener('click', function() {
+    document.body.classList.toggle('mobile-menu-open');
+});

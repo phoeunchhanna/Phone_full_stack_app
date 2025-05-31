@@ -21,34 +21,56 @@
                 <div class="col-sm-12">
                     <div class="card comman-shadow">
                         <div class="card-body">
-                            <form action="{{ route('suppliers.store') }}" method="POST" enctype="multipart/form-data" id="formcreate">
+                            <form action="{{ route('suppliers.store') }}" method="POST" enctype="multipart/form-data"
+                                id="formcreate">
                                 @csrf
                                 <div class="form-group d-flex align-items-center justify-content-between">
                                     <h2 class="text-primary font-weight-600 mb-0">បង្កើតអ្នកផ្គត់ផ្គង់</h2>
                                     <span>
                                         <!-- Back Button -->
-                                        <a href="{{route('suppliers.index')}}" class="btn btn-outline-primary">
+                                        <a href="{{ route('suppliers.index') }}" class="btn btn-outline-primary">
                                             <i class="fas fa-arrow-left"></i> ត្រឡប់ក្រោយ
                                         </a>
                                     </span>
                                 </div>
                                 <div class="Row">
+                      
                                     <div class="form-group">
-                                        <label for="name">ឈ្មោះអ្នកផ្គត់ផ្គង់<span class="login-danger">*</label>
-                                            <input type="text" class="form-control @error('name') is-invalid @enderror" 
-                                            id="name" name="name" value="" 
-                                            placeholder="បញ្ចូលឈ្មោះអតិថិជន" required>
+                                        <label for="name">ឈ្មោះអ្នកផ្គត់ផ្គង់<span class="login-danger">*</span></label>
+                                        <input type="text" class="form-control @error('name') is-invalid @enderror"
+                                            id="name" name="name" value=""
+                                            placeholder="បញ្ចូលឈ្មោះអ្នកផ្គត់ផ្គង់" required
+                                            oninput="validateSupplierName(this)">
                                         @error('name')
                                             <span class="invalid-feedback" role="alert">
                                                 <strong>{{ $message }}</strong>
                                             </span>
                                         @enderror
                                     </div>
-                                    <div class="form-group">
+                                    {{-- <div class="form-group">
                                         <label for="phone">លេខទូរស័ព្ទ<span class="login-danger">*</label>
-                                            <input type="text" class="form-control @error('phone') is-invalid @enderror" 
-                                            id="phone" name="phone" value="0" 
-                                            placeholder="បញ្ចូលលេខទូរស័ព្ទ" required>
+                                        <input type="text" class="form-control @error('phone') is-invalid @enderror"
+                                            id="phone" name="phone" value="0" placeholder="បញ្ចូលលេខទូរស័ព្ទ"
+                                            required>
+                                        @error('phone')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div> --}}
+                                    <div class="form-group">
+                                        <label for="phone">លេខទូរស័ព្ទ<span class="login-danger">*</span></label>
+                                        <input type="text" 
+                                               class="form-control @error('phone') is-invalid @enderror" 
+                                               id="phone" 
+                                               name="phone" 
+                                               value="{{ old('phone') }}" 
+                                               placeholder="បញ្ចូលលេខទូរស័ព្ទ" 
+                                               required 
+                                               pattern="^[0-9]{9,10}$" 
+                                               inputmode="numeric"
+                                               maxlength="10"
+                                               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);">
                                         @error('phone')
                                             <span class="invalid-feedback" role="alert">
                                                 <strong>{{ $message }}</strong>
@@ -57,16 +79,16 @@
                                     </div>
                                     <div class="form-group">
                                         <label for="address">អាសយដ្ឋាន<span class="login-danger">*</label>
-                                            <input type="text" class="form-control @error('address') is-invalid @enderror" 
-                                            id="address" name="address" value="" 
-                                            placeholder="បញ្ចូលអាសយដ្ឋាន" required>
+                                        <input type="text" class="form-control @error('address') is-invalid @enderror"
+                                            id="address" name="address" value="" placeholder="បញ្ចូលអាសយដ្ឋាន"
+                                            required>
                                         @error('address')
                                             <span class="invalid-feedback" role="alert">
                                                 <strong>{{ $message }}</strong>
                                             </span>
                                         @enderror
                                     </div>
-                                    
+
                                 </div>
                                 {{-- Submit and Cancel Buttons --}}
                                 <div class="mt-3 d-flex justify-content-end">
@@ -97,5 +119,23 @@
                 document.getElementById('formcreate').submit();
             }, 500);
         });
+
+        // Note allow number 
+        function validateSupplierName(input) {
+            const khmerDigits = /[\u17E0-\u17E9]/;
+            const onlyDigits = /^[0-9]+$/;
+            const allowedPattern = /^[\u1780-\u17FFa-zA-Z0-9\s]+$/;
+
+            if (
+                khmerDigits.test(input.value) || // contains Khmer digits
+                onlyDigits.test(input.value) || // only English digits
+                !allowedPattern.test(input.value) // contains invalid characters
+            ) {
+                input.setCustomValidity(
+                    "សូមបញ្ចូលអក្សរខ្មែរឬអង់គ្លេស ដែលអាចមានលេខភាសាអង់គ្លេសបន្តែម ប៉ុណ្ណោះ។ ហាមប្រើលេខតែឯង ឬលេខខ្មែរ។");
+            } else {
+                input.setCustomValidity("");
+            }
+        }
     </script>
 @endsection

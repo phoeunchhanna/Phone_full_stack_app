@@ -88,6 +88,10 @@
                     <label>Full Name <span class="login-danger">*</span></label>
                     <input type="text" class="form-control @error('name') is-invalid @enderror" name="name">
                     <span class="profile-views"><i class="fas fa-user-circle"></i></span>
+                </div> <div class="form-group">
+                    <label>Useranme <span class="login-danger">*</span></label>
+                    <input type="text" class="form-control @error('username') is-invalid @enderror" name="username">
+                    <span class="profile-views"><i class="fas fa-user-circle"></i></span>
                 </div>
                 <div class="form-group">
                     <label>Email <span class="login-danger">*</span></label>

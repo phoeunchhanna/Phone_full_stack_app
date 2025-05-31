@@ -18,13 +18,13 @@
                 <div class="col-sm-12">
                     <div class="card">
                         <div class="card-body">
-
                             <form action="{{ route('sales.store') }}" method="POST" id="formcreate">
                                 @csrf
                                 <div class="form-group d-flex align-items-center justify-content-between">
                                     <h3 class="text-primary font-weight-600 mb-0">បង្កើតការលក់</h3>
                                     <span>
-                                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#saleReturnModal">
+                                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                            data-bs-target="#saleReturnModal">
                                             <i class="bi bi-plus-circle"></i> បង្វិលទំនិញ
                                         </button>
                                         <!-- Back Button -->
@@ -34,10 +34,15 @@
                                     </span>
                                 </div>
 
-                                <div class="row">
+                                <div class="row d-flex justify-content-center">
                                     <div class="col-lg-4 col-md-6">
                                         <div class="form-group">
-                                            <label for="customer_id">អតិថិជន <span class="text-danger">*</span></label>
+                                            <label for="customer_id" class="form-label">អតិថិជន <span class="text-danger">*
+                                                    <a href="#" data-bs-toggle="modal"
+                                                        data-bs-target="#createcustomers">
+                                                        បន្ថែមអតិថិជន
+                                                    </a></span></label>
+                                            {{-- <label for="customer_id">អតិថិជន <span class="text-danger">*</span></label> --}}
                                             <select
                                                 class="form-control form-select @error('customer_id') is-invalid @enderror"
                                                 name="customer_id" id="customer_id" required>
@@ -126,47 +131,55 @@
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-                                                        <label for="paid_amount">ចំនួនប្រាក់ដែលបានបង់</label>
+                                                        <label for="paid_amount">ចំនួនប្រាក់ដែលបានបង់<span class="text-danger">*</span></label>
                                                         <input type="number" name="paid_amount" placeholder="$"
                                                             id="paid_amount" class="form-control" value=""
                                                             step="0.01" required>
                                                     </div>
                                                 </div>
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <label for="description">ចំណាំ</label>
+                                                        <textarea name="description" id="description" class="form-control" placeholder="ចំណាំ" rows="3"></textarea>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="col-lg-4 col-md-6">
-                                            <div class="invoice-total-card">
+                                            <div class="invoice-total-card rounded-lg p-4 bg-white">
                                                 <div class="invoice-total-box">
-                                                    <div class="invoice-total-inner">
-                                                        <p class="totalPrice">តម្លៃសរុប<span class="total_price">(-) 0.00
-                                                                $</span></p>
-                                                        <p class="totalPrice">ចំនួនទឹកប្រាក់បញ្ចុះតម្លៃ<span
-                                                                id="display_due_amount">(-) 0.00 $</span></p>
+                                                    <div class="invoice-total-inner border-bottom pb-3">
+                                                        <p class="totalPrice d-flex justify-content-between">
+                                                            <span>តម្លៃសរុប (Total Price)</span>
+                                                            <span class="total_price fw-bold">$ 0.00</span>
+                                                        </p>
+                                                        <p class="totalPrice d-flex justify-content-between">
+                                                            <span>បញ្ចុះតម្លៃ (Discount)</span>
+                                                            <span id="display_due_amount" class="fw-bold">$ 0.00</span>
+                                                        </p>
                                                     </div>
-                                                    <div class="invoice-total-footer">
-                                                        <h4 class="grandTotal">ទឹកប្រាក់សរុប <span
-                                                                id="display_grandTotal">0.00 $</span></h4>
+                                                    <div class="invoice-total-footer py-3 border-bottom">
+                                                        <h4
+                                                            class="grandTotal d-flex justify-content-between fw-bold text-primary">
+                                                            <span>ទឹកប្រាក់សរុប (Grand Total)</span>
+                                                            <span id="display_grandTotal">$ 0.00</span>
+                                                        </h4>
+                                                    </div>
+                                                    <div class="invoice-total-inner pt-3">
+                                                        <p class="due_amount d-flex justify-content-between">
+                                                            <span>ចំនួនទឹកប្រាក់នៅខ្វះ (Due Amount)</span>
+                                                            <span class="fw-bold" id="due_amount">$ 0.00</span>
+                                                        </p>
+                                                        <input class="form-control change_return input_number" required
+                                                            name="due_amount" id="due_amount" type="hidden"
+                                                            value="0.00">
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="row justify-content-md-end">
-                                        <div class="col-md-4">
-                                            <div class="invoice-total-card">
-                                                <div class="invoice-total-inner">
-                                                    <h5 class="change_return_span d-flex justify-content-between">
-                                                        <span>ចំនួនទឹកប្រាក់នៅសល់</span>
-                                                        <span id="due_amount">0.00$</span>
-                                                    </h5>
-                                                    <input class="form-control change_return input_number" required
-                                                        name="due_amount" id="due_amount" type="hidden" value="0.00">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="mt-3 d-flex justify-content-end">
-                                        <div class="form-group mt-4">
+                                    <div class="mt-0 d-flex justify-content-end">
+                                        <div class="form-group mt-0">
                                             <button type="submit" class="btn btn-primary btn-lg"
                                                 id="saveButton">រក្សាទុក<i class="bi bi-check-lg"></i></button>
                                             <button class="btn btn-primary btn-lg" type="button" disabled=""
@@ -185,13 +198,14 @@
             </div>
         </div>
     </div>
+    @include('admin.customers.modal.create')
     {{-- Modal for Sale Return --}}
     <div class="modal fade" id="saleReturnModal" tabindex="-1" aria-labelledby="saleReturnModalLabel"
         aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="saleReturnModalLabel">បង់វិលទំនិញ</h5>
+                    <h5 class="modal-title" id="saleReturnModalLabel">បង្វិលចូលទំនិញ</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -228,15 +242,21 @@
                 }
             });
 
-            // Function to calculate and display discount, grand total, and due amount
+            // Function to format currency
+            function formatCurrency(amount) {
+                return '$ ' + parseFloat(amount).toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+
             function calculateDiscount() {
-                let totalAmount = parseFloat($(".total_price").text()) || 0;
+                let totalAmount = parseFloat($(".total_price").text().replace(/[^0-9.]/g, '')) || 0;
                 let discountType = $("#discount_type").val();
                 let discountAmount = parseFloat($("#discount_amount").val()) || 0;
                 let paidAmount = parseFloat($("#paid_amount").val()) || 0;
                 let totalDiscount = 0;
 
-                // Discount calculations based on the selected type
                 if (discountType === "percentage") {
                     if (discountAmount > 100) {
                         discountAmount = 0;
@@ -247,49 +267,40 @@
                 } else if (discountType === "fixed") {
                     if (discountAmount > totalAmount) {
                         discountAmount = 0;
-                        toastr.warning("ការបញ្ចុះតម្លៃជាទឹកប្រាក់ មិនអាចលើសពីចំនួនទឹកប្រាក់សរុបបានទេ");
                         $("#discount_amount").val(discountAmount);
                     }
                     totalDiscount = discountAmount;
                 }
 
-                // Calculate grand total and due amount
                 let grandTotal = totalAmount - totalDiscount;
                 let dueAmount = grandTotal - paidAmount;
 
                 if (paidAmount === 0) {
-                    dueAmount = 0;
+                    dueAmount = 0.00;
                 }
 
-                // Update UI with calculated amounts
-                $("#display_due_amount").text(`${totalDiscount.toFixed(2)} $`);
-                $("#display_grandTotal").text(`${grandTotal.toFixed(2)} $`);
-                $("#due_amount").text(`${dueAmount.toFixed(2)} $`);
+                $("#display_due_amount").text(formatCurrency(totalDiscount));
+                $("#display_grandTotal").text(formatCurrency(grandTotal));
+                $("#due_amount").text(formatCurrency(dueAmount));
             }
 
-            // Event listeners for discount amount and type change
+            // Attach event listeners
             $("#discount_type, #discount_amount").on("change keyup", function() {
                 $("#paid_amount").val("");
                 calculateDiscount();
             });
 
-            // Event listener for paid amount change
             $("#paid_amount").on("keyup change", function() {
                 let paidAmount = parseFloat($("#paid_amount").val()) || 0;
-                let totalAmount = parseFloat($("#display_grandTotal").text()) || 0;
+                let totalAmount = parseFloat($("#display_grandTotal").text().replace(/[^0-9.]/g, '')) || 0;
 
-                let discountAmount = parseFloat($("#discount_amount").val()) || 0;
-
-                // Warning if paid amount exceeds total
                 if (paidAmount > totalAmount) {
                     toastr.warning("ចំនួនទឹកប្រាក់ដែលបានបង់មិនអាចលើសពីតម្លៃសរុបទេ");
                     $("#paid_amount").val(totalAmount);
-                    paidAmount = totalAmount;
                 }
                 calculateDiscount();
             });
-
-            // Function to fetch and display cart items
+            // Fetch and display cart items
             function getCarts() {
                 $.ajax({
                     type: "GET",
@@ -297,60 +308,54 @@
                     dataType: "json",
                     success: function(response) {
                         let total = 0;
-                        if (response.success) {
-                            const cartBody = $("#cart_table");
-                            cartBody.empty();
-                            if (response.cartItems && response.cartItems.length > 0) {
-                                $("#saveButton").prop("disabled", false);
-                                $.each(response.cartItems, function(index, item) {
-                                    const itemTotal = (item.quantity * item.price).toFixed(2);
-                                    total += parseFloat(itemTotal);
-                                    // Add each cart item to the table
-                                    cartBody.append(`
-                                        <tr>
-                                            <td>${index + 1}</td>
-                                            <td>${item.name}</td>
-                                            <td>${item.price}</td>
-                                            <td>
-                                                <input type="hidden" value="${item.id}">
-                                                <input type="number" class="form-control cart-quantity" min="1" data-product-id="${item.id}" value="${item.quantity}" style="width: 100px; text-align: center;">
-                                            </td>
-                                            <td class="priceDisplay">${itemTotal}</td>
-                                            <td>
-                                                <button type="button" class="btn btn-danger btn-sm remove-item" data-product-id="${item.id}">
-                                                    <i class="bi bi-trash3"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    `);
-                                });
-                            } else {
-                                // If cart is empty
-                                $("#saveButton").prop("disabled", true);
+                        const cartBody = $("#cart_table");
+                        cartBody.empty();
+
+                        if (response.success && response.cartItems.length > 0) {
+                            $("#saveButton").prop("disabled", false);
+                            $.each(response.cartItems, function(index, item) {
+                                let itemTotal = item.quantity * item.price;
+                                total += itemTotal;
                                 cartBody.append(`
-                                    <tr>
-                                        <td colspan="6" class="text-center "><h5 class="text-danger">គ្មានទិន្នន័យ</h5></td>
-                                    </tr>
-                                `);
-                            }
-                            $(".total_price").text(`${total.toFixed(2)} $`);
-                            $("#display_grandTotal").text(total.toFixed(2));
-                            calculateDiscount();
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>${item.name}</td>
+                                    <td>${formatCurrency(item.price)}</td>
+                                    <td>
+                                        <input type="hidden" value="${item.id}">
+                                        <input type="number" class="form-control cart-quantity" min="1" data-product-id="${item.id}" value="${item.quantity}" style="width: 100px; text-align: center;">
+                                    </td>
+                                    <td class="priceDisplay">${formatCurrency(itemTotal)}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger btn-sm remove-item" data-product-id="${item.id}">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `);
+                            });
                         } else {
-                            $(".total_price").text("0.00");
-                            $("#display_grandTotal").text("0.00");
-                            $("#paid_amount").text("");
-                            toastr.error("បរាជ័យក្នុងការទាញយកទិន្នន័យកន្ត្រក។");
+                            $("#paid_amount").val("");
+                            $("#saveButton").prop("disabled", true);
+                            cartBody.append(`
+                                <tr>
+                                    <td colspan="6" class="text-center"><h5 class="text-danger">គ្មានទិន្នន័យ</h5></td>
+                                </tr>
+                            `);
+                            calculateDiscount();
                         }
+                        $(".total_price").text(formatCurrency(total));
+                        $("#display_grandTotal").text(formatCurrency(total));
+                        calculateDiscount();
                     },
                     error: function() {
-                        toastr.error("កំហុសក្នុងការទាញយកទិន្នន័យកន្ត្រក។");
+                        toastr.error("បរាជ័យក្នុងការទាញយកទិន្នន័យកន្ត្រក។");
                     }
                 });
             }
             getCarts();
 
-            // Product search functionality using select2
+            // Product search using select2
             $('#product-search').select2({
                 placeholder: "ស្វែងរកតាមឈ្មោះផលិតផល ឬលេខសម្គាល់...",
                 minimumInputLength: 1,
@@ -390,16 +395,11 @@
                             getCarts();
                             $('#product-search').val(null).trigger('change');
                         } else {
-                            toastr.warning(response.message || "Failed to add product.");
-                            $('#product-search').val(null).trigger('change');
+                            toastr.warning(response.message);
                         }
                     },
-                    error: function(xhr, status, error) {
-                        let errorMessage = "Error adding product to cart.";
-                        if (xhr.responseJSON && xhr.responseJSON.message) {
-                            errorMessage = xhr.responseJSON.message;
-                        }
-                        toastr.error(errorMessage);
+                    error: function() {
+                        toastr.error("Error adding product to cart.");
                     }
                 });
             });
@@ -410,14 +410,6 @@
                 deleteCartItem(productId);
             });
 
-            // Update cart quantity
-            $(document).on("change", ".cart-quantity", function() {
-                const productId = $(this).data("product-id");
-                const quantity = $(this).val();
-                updateCartItemQuantity(productId, quantity);
-            });
-
-            // Function to delete item from cart
             function deleteCartItem(productId) {
                 $.ajax({
                     type: "POST",
@@ -441,39 +433,13 @@
                 });
             }
 
-            // Clear the entire cart
-            $(document).on("click", ".btn-back", function(event) {
-                event.preventDefault();
-                clearCart();
-                setTimeout(function() {
-                    window.location.href = "{{ route('sales.index') }}";
-                }, 1500);
+            // Update cart item quantity
+            $(document).on("change", ".cart-quantity", function() {
+                const productId = $(this).data("product-id");
+                const quantity = $(this).val();
+                updateCartItemQuantity(productId, quantity);
             });
 
-            // Function to clear the cart
-            function clearCart() {
-                $.ajax({
-                    type: "POST",
-                    url: "{{ route('sales.cart.clear') }}",
-                    data: {
-                        _token: "{{ csrf_token() }}"
-                    },
-                    dataType: "json",
-                    success: function(response) {
-                        if (response.success) {
-                            toastr.success(response.message);
-                            getCarts();
-                        } else {
-                            toastr.error(response.message);
-                        }
-                    },
-                    error: function() {
-                        toastr.error("Error clearing cart.");
-                    }
-                });
-            }
-
-            // Function to update cart item quantity
             function updateCartItemQuantity(productId, quantity) {
                 $.ajax({
                     type: "POST",

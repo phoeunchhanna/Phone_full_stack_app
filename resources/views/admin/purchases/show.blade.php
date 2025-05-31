@@ -7,7 +7,7 @@
                     <div class="col">
                         <ul class="breadcrumb">
                             <li class="breadcrumb-item"><a href="{{ route('purchases.index') }}">បញ្ជីការលក់</a></li>
-                            <li class="breadcrumb-item active">ព័ត៌មានលម្អិតអំពីការលក់</li>
+                            <li class="breadcrumb-item active">ព័ត៌មានលម្អិតអំពីការបញ្ជាទិញ</li>
                         </ul>
                     </div>
                 </div>
@@ -17,7 +17,7 @@
                     <div class="col-12">
                         <div class="invoice-info d-flex justify-content-between align-items-center">
                             <div class="invoice-head">
-                                <h2 class="text-primary">ព័ត៌មានលម្អិតអំពីការលក់</h2>
+                                <h2 class="text-primary">ព័ត៌មានលម្អិតអំពីការបញ្ជាទិញ</h2>
                                 <p>លេខយោង(លេខវិក័យបត្រ) : {{ $purchase->reference }}</p>
                             </div>
                             <span>
@@ -35,9 +35,9 @@
                         <div class="row">
                             <div class="col-lg-4 col-md-12">
                                 <div class="invoice-info invoice-info-one border-1">
-                                    <strong class="supplier-text-one text-light fs-3 mb-2">លក់ជូន៖</strong>
+                                    <strong class="supplier-text-one text-light fs-3 mb-2">ផ្គត់ផ្គង់ទំនិញដោយ៖</strong>
                                     <p >កាលបរិច្ឆេទ(ថ្ងៃទី-ខែ-ឆ្នាំ) : {{ \Carbon\Carbon::parse($purchase->date)->translatedFormat('d-F-Y') }}</p>
-                                    <p>ឈ្មោះអតិថិជន : {{ $purchase->supplier->name }}</p>
+                                    <p>ឈ្មោះអ្នកផ្គត់ផ្គង់ : {{ $purchase->supplier->name }}</p>
                                     <p>លេខទូរស័ព្ទ : {{ $purchase->supplier->phone }}</p>
                                     <p>អាសយដ្ឋាន : {{ $purchase->supplier->address }}</p>
                                 </div>
@@ -48,7 +48,7 @@
                                     <p>តម្លៃសរុប : {{ number_format($purchase->total_amount, 2) }} $</p>
                                     <p>បញ្ចុះតម្លៃ : {{ number_format($purchase->discount, 2) }} $</p>
                                     <p>ចំនួនទឹកប្រាក់បានបង់ : {{ number_format($purchase->paid_amount, 2) }} $</p>
-                                    <p>ចំនួនទឹកប្រាក់នៅសល់ : {{ number_format($purchase->due_amount, 2) }} $</p>
+                                    <p>ចំនួនទឹកប្រាក់ខ្វះ: {{ number_format($purchase->due_amount, 2) }} $</p>
                                 </div>
                             </div>
                             <div class="col-lg-4 col-md-12">

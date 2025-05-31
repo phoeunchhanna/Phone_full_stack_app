@@ -23,8 +23,8 @@
                             <div class="page-header">
                                 <div class="row align-items-center">
                                     <div class="col mb-2">
-                                        <h3 class="text-primary font-weight-600">បញ្ជីប្រភេទផលិតផល</h3>
-                                        <div class="col-auto text-end float-end ms-auto download-grp">
+                                        <h3 class="text-primary font-weight-600">បញ្ជីផលិតផល</h3>
+                                        {{-- <div class="col-auto text-end float-end ms-auto download-grp">
                                             @can('ទាញយកទិន្នន័យផលិតផល')
                                                 <a href="{{ route('export-products-excel') }}"
                                                     class="btn btn-outline-primary me-2"><i class="fas fa-download"></i>
@@ -36,7 +36,28 @@
                                                         class="fas fa-plus"></i></a>
                                             @endcan
 
+                                        </div> --}}
+                                        <div class="col-auto text-end float-end ms-auto download-grp">
+                                            @can('ទាញយកទិន្នន័យផលិតផល')
+                                                @if ($products->count() > 0)
+                                                    <a href="{{ route('export-products-excel') }}"
+                                                       class="btn btn-outline-primary me-2">
+                                                       <i class="fas fa-download"></i> ទាញយកទិន្នន័យ
+                                                    </a>
+                                                @else
+                                                    <button class="btn btn-outline-secondary me-2" disabled>
+                                                        <i class="fas fa-download"></i> ទាញយកទិន្នន័យ
+                                                    </button>
+                                                @endif
+                                            @endcan
+                                        
+                                            @can('បង្កើតផលិតផល')
+                                                <a href="{{ route('products.create') }}" class="btn btn-primary">
+                                                    បន្ថែម <i class="fas fa-plus"></i>
+                                                </a>
+                                            @endcan
                                         </div>
+                                        
                                     </div>
                                 </div>
                                 <div id="loading-spinner" class="text-center" style="display: none;">

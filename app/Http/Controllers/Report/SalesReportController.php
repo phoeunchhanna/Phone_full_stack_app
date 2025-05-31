@@ -16,10 +16,26 @@ class SalesReportController extends Controller
     {
         $customers = Customer::all();
         $products  = Product::all();
-        $sales     = []; // ទុកអោយអថិ.ចាប់ផ្តើមគ្មានទិន្នន័យ
+        $sales     = [];
 
         return view('admin.reports.sales-report', compact('sales', 'customers', 'products'));
     }
+    // public function index()
+    // {
+    //     $customers = Customer::all();
+    //     $products  = Product::all();
+    //     $startDate = Carbon::now()->subDays(7)->startOfDay();
+    //     $endDate   = Carbon::now()->endOfDay();
+
+    //     $sales = SaleDetail::whereHas('sale', function ($query) use ($startDate, $endDate) {
+    //         $query->whereBetween('date', [$startDate, $endDate]);
+    //     })->with(['sale', 'product'])
+    //       ->orderByDesc('created_at') // Newest first
+    //       ->get();
+
+    //     return view('admin.reports.sales-report', compact('sales', 'customers', 'products'));
+    // }
+
     public function SaleReport(Request $request)
     {
         $customers = Customer::all();
@@ -45,23 +61,44 @@ class SalesReportController extends Controller
         }
 
         // Filter by Customer
+        // if ($request->filled('customer_id')) {
+        //     $query->where('customer_id', $request->customer_id);
+        // }
+
+        // // Filter by Payment Status
+        // if ($request->filled('payment_status')) {
+        //     $query->where('payment_status', $request->payment_status);
+        // }
+
+        // // Filter by Payment Method
+        // if ($request->filled('payment_method')) {
+        //     $query->where('payment_method', $request->payment_method);
+        // }
+
+        // // $sales = $query->with(['customer', 'saleDetails.product'])->get();
+        // $sales = $query->with(['sale', 'product'])->get();
         if ($request->filled('customer_id')) {
-            $query->where('customer_id', $request->customer_id);
+            $query->whereHas('sale', function ($query) use ($request) {
+                $query->where('customer_id', $request->customer_id);
+            });
         }
-
-        // Filter by Payment Status
+    
+        // ✅ Corrected: Filter by Payment Status
         if ($request->filled('payment_status')) {
-            $query->where('payment_status', $request->payment_status);
+            $query->whereHas('sale', function ($query) use ($request) {
+                $query->where('payment_status', $request->payment_status);
+            });
         }
-
-        // Filter by Payment Method
+    
+        // ✅ Corrected: Filter by Payment Method
         if ($request->filled('payment_method')) {
-            $query->where('payment_method', $request->payment_method);
+            $query->whereHas('sale', function ($query) use ($request) {
+                $query->where('payment_method', $request->payment_method);
+            });
         }
-
-        // $sales = $query->with(['customer', 'saleDetails.product'])->get();
+    
         $sales = $query->with(['sale', 'product'])->get();
-
+    
         if ($request->has('export') && $request->export == 'excel') {
             return Excel::download(new SalesReportExport($sales), 'sales.report.export.xlsx');
         }

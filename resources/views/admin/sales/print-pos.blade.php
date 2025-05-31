@@ -5,22 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ URL::to('fonts/battambang.css') }}">
     <style>
+        @page {
+            size: 80mm auto; /* Set width to 80mm for thermal printer */
+            margin: 0; /* Remove default margin */
+        }
+
         body {
             font-family: Battambang, sans-serif;
             font-size: 10px;
+            margin: 0;
+            padding: 0;
+            background-color: white;
         }
 
         .receipt {
-            width: 80mm;
-            margin: 0 auto;
+            width: 80mm; /* Standard thermal printer width */
             padding: 5mm;
-            border: 1px solid #ccc;
+            margin: 0 auto;
             box-sizing: border-box;
         }
 
         .receipt-header,
         .receipt-footer {
             text-align: center;
+            margin-bottom: 5px;
         }
 
         .receipt-header h2,
@@ -31,16 +39,17 @@
         }
 
         .receipt-body {
-            margin-top: 10px;
+            margin-top: 5px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
+            font-size: 10px;
         }
 
         th, td {
-            padding: 5px;
+            padding: 3px;
             text-align: left;
             vertical-align: top;
         }
@@ -50,8 +59,14 @@
         }
 
         .separator {
-            margin: 5px 0;
+            margin: 3px 0;
             text-align: center;
+            font-size: 12px;
+        }
+
+        /* Avoid page break inside item lists */
+        .page-break {
+            page-break-inside: avoid;
         }
     </style>
 </head>
@@ -60,13 +75,14 @@
         <div class="receipt-header">
             <h2>ហាងលក់ទូរស័ព្ទដៃ ឡេង ស៊ីណេត</h2>
             <h4>វិក្កយប័ត្រ / Commercial Invoice</h4>
-            <h5>អាសយដ្ឋាន: ភូមិគោករកា ឃុំតាបែន​ ស្រុកស្វាយចេក ខេត្តបន្ទាយមានជ័យ</h5>
+            <h5>អាសយដ្ឋាន: ភូមិគោករកា ឃុំតាបែន ស្រុកស្វាយចេក ខេត្តបន្ទាយមានជ័យ</h5>
         </div>
+
         <div class="receipt-body">
             <table>
                 <tbody>
                     <tr>
-                        <td>លេខរៀងវិក្កយបត្រ: #{{ $sales->reference }}</td>
+                        <td>លេខវិក្កយបត្រ: #{{ $sales->reference }}</td>
                         <td class="text-right">អ្នកគិតលុយ: {{ $sales->user->name }}</td>
                     </tr>
                     <tr>
@@ -76,14 +92,15 @@
                 </tbody>
             </table>
             <hr>
-            <table>
+
+            <table class="page-break">
                 <thead>
                     <tr>
                         <th>ល.រ</th>
-                        <th>បរិយាយមុខទំនិញ</th>
-                        <th>ថ្លៃឯកត្តា</th>
-                        <th>បរិមាណ</th>
-                        <th>ថ្លៃទំនិញ</th>
+                        <th>បរិយាយ</th>
+                        <th class="text-right">ថ្លៃឯកត្តា</th>
+                        <th class="text-right">បរិមាណ</th>
+                        <th class="text-right">សរុប</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -99,6 +116,7 @@
                 </tbody>
             </table>
             <hr>
+
             <table>
                 <tbody>
                     <tr>
@@ -123,7 +141,7 @@
                     </tr>
                 </tbody>
             </table>
-            <div class="separator">....................................................................................</div>
+            <div class="separator">------------------------------------------------</div>
         </div>
 
         <div class="receipt-footer">
@@ -131,6 +149,7 @@
             <p>Thank you for shopping with us!</p>
         </div>
     </div>
+
     <script>
         window.onload = function() {
             window.print();

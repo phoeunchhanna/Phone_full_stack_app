@@ -29,7 +29,7 @@
                                             <label for="date_range" class="form-label">ជ្រើសរើស ថ្ងៃខែឆ្នាំ <span class="text-danger">*</span></label>
                                             <input type="text" name="date_range" id="date_range" 
                                                 class="form-control date_range_picker" 
-                                                value="{{ request('date_range', now()->subDays(7)->format('d/m/Y') . ' to ' . now()->format('d/m/Y')) }}">
+                                                value="{{ request('date_range', now()->subDays(7)->format('d/m/Y') . ' to ' . now()->format('d/m/Y')) }}" readonly>
                                             @error('date_range')
                                                 <span class="text-danger mt-1">{{ $message }}</span>
                                             @enderror
@@ -48,7 +48,6 @@
                     </div>
                 </div>
             </div>
-            
 
             <div class="row">
                 <div class="row">
