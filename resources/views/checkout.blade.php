@@ -11,7 +11,8 @@
         <div class="row">
             <div class="col-md-8">
                 <div class="card">
-                    <div class="card-header bg-primary text-white ">Customer Information</div>
+                    <div class="card-header bg-primary text-white ">Customer Orders</div>
+                    <p>Enter infor below </p>
                     <div class="card-body">
                         <form method="POST" action="{{ route('checkout.process') }}">
                             @csrf
