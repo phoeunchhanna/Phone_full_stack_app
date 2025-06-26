@@ -10,11 +10,15 @@ use App\Models\Sale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use App\Models\SaleDetail;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator as FacadesValidator;
+use Telegram\Bot\Api;
 
 class ClientController extends Controller
 {
+
     public function userhome()
     {
 
@@ -50,6 +54,23 @@ class ClientController extends Controller
         return view('product_show', compact('pro_shows', 'products', 'brands', 'categories'));
     }
 
+    // show product category 
+    public function show($id)
+    {
+        $category = Category::with('products')->findOrFail($id);
+        $categories = Category::all(); // For the sidebar
+
+        return view('loyouts_user.product_list.category_show', compact('category', 'categories'));
+    }
+
+    public function show_brands($id)
+    {
+        $brand = Brand::with('products')->findOrFail($id);
+        $brands = brand::all(); // For the sidebar
+
+        return view('loyouts_user.product_list.brand_show', compact('category', 'categories'));
+    }
+
     public function pro_list_show($id)
     {
 
@@ -68,8 +89,8 @@ class ClientController extends Controller
     {
         $brand = Brand::findOrFail($id);
         $products = Product::where('brand_id', $id)
-            ->where('quantity', '>', 0)
-            ->get();
+            ->where('stock_alert', '>', 0)
+            ->get(); // Changed from get() to paginate()
 
         $categories = Category::all();
         $brands = Brand::all();
@@ -103,25 +124,25 @@ class ClientController extends Controller
         if (isset($cart[$id])) {
             $cart[$id]['quantity']++;
         } else {
-            // Generate public URL for image (e.g., /storage/products/apple.jpg)
-            $imagePath = Storage::exists($product->image)
+            // ពិនិត្យមើលថាតើរូបភាពមាននៅក្នុង storage ឬទេ
+            $imagePath = Storage::exists('public/' . $product->image)
                 ? Storage::url($product->image)
-                : asset('image.png'); // fallback image if not found
+                : asset('images/default-product.png'); // រូបភាពលំនាំដើមប្រសិនបើគ្មាន
 
             $cart[$id] = [
                 'name' => $product->name,
                 'quantity' => 1,
                 'price' => $product->selling_price,
-                'image' => $imagePath, // <<--- FIXED: Use the public URL
+                'image' => $imagePath,
             ];
         }
 
         session()->put('cart', $cart);
-
-        return redirect()->back()->with('success', 'Product added to cart!');
+        return redirect()->back()->with('success', 'ផលិតផលត្រូវបានបញ្ចូលក្នុងរទេះ!');
     }
 
- 
+
+
 
     public function checkout()
     {
@@ -143,14 +164,14 @@ class ClientController extends Controller
      */
     public function processCheckout(Request $request)
     {
-        // Validate customer information
         $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'address' => 'required|string|max:500',
             'payment_method' => 'required|in:cash,card,bank_transfer',
-            'discount' => 'nullable|numeric|min:0|max:100', // Discount percentage (0-100)
-            'discount_amount' => 'nullable|numeric|min:0', // Fixed discount amount
+            'discount_type' => 'required|in:none,percentage,fixed',
+            'discount_percentage' => 'required_if:discount_type,percentage|nullable|numeric|min:0|max:100',
+            'discount_amount' => 'required_if:discount_type,fixed|nullable|numeric|min:0',
         ]);
 
         $cart = session('cart', []);
@@ -166,9 +187,12 @@ class ClientController extends Controller
 
         // Calculate discount (either percentage or fixed amount)
         $discount = 0;
-        if ($request->filled('discount')) {
-            $discount = ($subtotal * $request->discount) / 100;
-        } elseif ($request->filled('discount_amount')) {
+        $discountType = $request->discount_type;
+
+        if ($discountType === 'percentage') {
+            $percentage = $request->discount_percentage;
+            $discount = ($subtotal * $percentage) / 100;
+        } elseif ($discountType === 'fixed') {
             $discount = min($request->discount_amount, $subtotal);
         }
         $total = $subtotal - $discount;
@@ -238,17 +262,90 @@ class ClientController extends Controller
         return view('order_confirmation', compact('order'));
     }
 
-
     public function printOrder()
     {
         $orderId = session('last_order_id');
 
         if (!$orderId) {
-            return redirect()->back()->with('error', 'Order ID not found in session.');
+            return redirect()->back()
+                ->with('error', 'Order ID not found in session.');
         }
 
-        $order = Sale::with(['customer', 'saleDetails.product'])->findOrFail($orderId);
+        $order = Sale::with(['customer', 'saleDetails.product'])
+            ->findOrFail($orderId);
+
+        // Send formatted order to Telegram
+        $this->sendOrderNotification($order);
+
         return view('print_cart', compact('order'));
+    }
+
+    private function sendOrderNotification(Sale $order)
+    {
+        $message = $this->createOrderMessage($order);
+        $this->sendToTelegram($message);
+    }
+
+    private function createOrderMessage(Sale $order): string
+    {
+        return <<<MSG
+<b>🛒 NEW ORDER RECEIPT #{$order->reference}</b>
+━━━━━━━━━━━━━━━━━━
+📅 <b>Date:</b> {$order->date->format('d/m/Y H:i')}
+👤 <b>Customer:</b> {$order->customer->name}
+📱 <b>Phone:</b> {$order->customer->phone}
+🏠 <b>Address:</b> {$order->customer->address}
+💳 <b>Payment:</b> {$this->formatPaymentMethod($order->payment_method)}
+━━━━━━━━━━━━━━━━━━
+<b>📦 ORDER ITEMS:</b>
+{$this->formatOrderItems($order->saleDetails)}
+━━━━━━━━━━━━━━━━━━
+💰 <b>Subtotal:</b> \${$this->formatPrice($order->total_amount)}
+{$this->formatDiscount($order->discount)}
+💵 <b>Total Paid:</b> \${$this->formatPrice($order->paid_amount)}
+━━━━━━━━━━━━━━━━━━
+Thank you for your order!
+MSG;
+    }
+
+    private function formatPaymentMethod(string $method): string
+    {
+        return ucfirst(str_replace('_', ' ', $method));
+    }
+
+    private function formatOrderItems($items): string
+    {
+        return $items->map(function ($item) {
+            return "➡️ {$item->product->name} (×{$item->quantity}) - \${$this->formatPrice($item->total_price)}";
+        })->implode("\n");
+    }
+
+    private function formatDiscount(float $discount): string
+    {
+        return $discount > 0
+            ? "🎁 <b>Discount:</b> -\${$this->formatPrice($discount)}\n"
+            : '';
+    }
+
+    private function formatPrice(float $amount): string
+    {
+        return number_format($amount, 2);
+    }
+
+    private function sendToTelegram(string $message): void
+    {
+        try {
+            $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
+
+            $telegram->sendMessage([
+                'chat_id' => env('TELEGRAM_CHAT_ID'),
+                'text' => $message,
+                'parse_mode' => 'HTML',
+                'disable_web_page_preview' => true
+            ]);
+        } catch (\Exception $e) {
+            \Log::error("Telegram notification error: {$e->getMessage()}");
+        }
     }
 
     /**
@@ -273,9 +370,8 @@ class ClientController extends Controller
         ]);
     }
 
-    /**
-     * Remove item from cart
-     */
+
+
     public function removeFromCart(Request $request)
     {
         $id = $request->id;
@@ -284,18 +380,27 @@ class ClientController extends Controller
         if (isset($cart[$id])) {
             unset($cart[$id]);
             session()->put('cart', $cart);
+
+            // Calculate new subtotal
+            $subtotal = 0;
+            foreach ($cart as $item) {
+                $subtotal += $item['price'] * $item['quantity'];
+            }
+
+            return response()->json([
+                'success' => true,
+                'cartCount' => array_sum(array_column($cart, 'quantity')),
+                'subtotal' => $subtotal,
+                'message' => 'ធាតុត្រូវបានលុបចេញពីរទេះដោយជោគជ័យ។'
+            ]);
         }
 
         return response()->json([
-            'success' => true,
-            'cartCount' => array_sum(array_column($cart, 'quantity')),
-            'message' => 'Item removed from cart.'
-        ]);
+            'success' => false,
+            'message' => 'រកមិនឃើញធាតុក្នុងរទេះ។'
+        ], 404);
     }
 
-    /**
-     * View cart
-     */
     public function viewCart()
     {
         $cart = session('cart', []);
@@ -304,7 +409,121 @@ class ClientController extends Controller
         foreach ($cart as $item) {
             $subtotal += $item['price'] * $item['quantity'];
         }
-
         return view('cart', compact('cart', 'subtotal'));
+    }
+
+
+    public function increaseQuantity($id)
+    {
+        $cart = session()->get('cart', []);
+
+        if (isset($cart[$id])) {
+            $cart[$id]['quantity'] += 1;
+            session()->put('cart', $cart);
+
+            return response()->json([
+                'success' => true,
+                'cartCount' => array_sum(array_column($cart, 'quantity')),
+                'subtotal' => $this->calculateSubtotal($cart),
+                'itemPrice' => $cart[$id]['price'],
+                'message' => 'Quantity increased successfully'
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Product not found in cart'], 404);
+    }
+
+    public function decreaseQuantity($id)
+    {
+        $cart = session()->get('cart', []);
+
+        if (isset($cart[$id])) {
+            if ($cart[$id]['quantity'] > 1) {
+                $cart[$id]['quantity'] -= 1;
+                session()->put('cart', $cart);
+            }
+
+            return response()->json([
+                'success' => true,
+                'cartCount' => array_sum(array_column($cart, 'quantity')),
+                'subtotal' => $this->calculateSubtotal($cart),
+                'itemPrice' => $cart[$id]['price'],
+                'message' => 'Quantity decreased successfully'
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Product not found in cart'], 404);
+    }
+
+    public function updateQuantity(Request $request, $id)
+    {
+        $cart = session()->get('cart', []);
+        $newQuantity = max(1, (int)$request->quantity);
+
+        if (isset($cart[$id])) {
+            $cart[$id]['quantity'] = $newQuantity;
+            session()->put('cart', $cart);
+
+            return response()->json([
+                'success' => true,
+                'cartCount' => array_sum(array_column($cart, 'quantity')),
+                'subtotal' => $this->calculateSubtotal($cart),
+                'itemPrice' => $cart[$id]['price'],
+                'message' => 'Quantity updated successfully'
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Product not found in cart'], 404);
+    }
+
+    private function calculateSubtotal($cart)
+    {
+        return array_reduce($cart, function ($carry, $item) {
+            return $carry + ($item['price'] * $item['quantity']);
+        }, 0);
+    }
+
+    public function showContactForm()
+    {
+        return view('contact');
+    }
+
+
+    public function submitContactForm(Request $request)
+    {
+        $validator = FacadesValidator::make($request->all(), [
+            'full_name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'required|string|max:20',
+            'message' => 'required|string|max:1000',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        try {
+            $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
+            $chatId = env('TELEGRAM_CHAT_ID');
+
+            $text = "📩 **សារប្រមូលផ្តុំពីអតិថិជន** 📩\n\n"
+                . "👤 **ឈ្មោះ:** " . $request->full_name . "\n"
+                . "📧 **អ៊ីម៉ែល:** " . $request->email . "\n"
+                . "📱 **លេខទូរសព្ទ៍:** " . $request->phone . "\n"
+                . "💬 **សារ:** " . $request->message;
+
+            $telegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => $text
+            ]);
+
+            return redirect()->back()->with('success', 'Thank you for your message! We will contact you soon.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'There was an error sending your message. Please try again later.')
+                ->withInput();
+        }
     }
 }

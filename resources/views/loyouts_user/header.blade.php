@@ -207,7 +207,7 @@
         <div class="container">
             <!-- Logo -->
             <a class="navbar-brand d-flex align-items-center" href="{{ url('/') }}">
-                <img src="{{ asset('images/phone_shopicon.png') }}" alt="Logo" class="rounded-circle p-1 bg-warning"
+                <img src="{{ asset('images/phone_shopicon.png') }}" alt="Logo" class="rounded-circle p-1 bg-dark"
                     style="width: 50px; height: 50px; object-fit: contain;">
             </a>
 
@@ -246,7 +246,7 @@
                         <ul class="dropdown-menu">
                             @foreach ($brands as $brand)
                                 <li>
-                                    <a class="dropdown-item" href="{{ route('brand.products', $brand->id) }}">
+                                    <a href="{{ route('brand.products', $brand->id) }}" class="text-decoration-none">
                                         {{ $brand->name }}
                                     </a>
                                 </li>
@@ -268,7 +268,7 @@
                         </ul>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-black" href="#">Contact</a>
+                        <a class="nav-link text-black" href="{{ route('contact.form') }}">Contact</a>
                     </li>
                 </ul>
 
@@ -307,13 +307,12 @@
                             @if (!empty($cart))
                                 @foreach ($cart as $id => $item)
                                     <li class="d-flex align-items-start mb-3 border-bottom pb-2">
-                                        <img src="{{ asset('storage/' . $item['image']) }}" alt="Product"
+                                        <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}"
                                             class="rounded me-2"
                                             style="width: 50px; height: 50px; object-fit: cover;">
                                         <div class="flex-grow-1">
                                             <p class="mb-0 fw-bold">{{ $item['name'] }}</p>
-                                            <small>{{ $item['quantity'] }} ×
-                                                R{{ number_format($item['price'], 2) }}</small>
+                                            <small>{{ $item['quantity'] }} × R{{ number_format($item['price'], 2) }}</small>
                                         </div>
                                         <a href="#" class="text-danger ms-2 remove-from-cart"
                                             data-id="{{ $id }}">
@@ -322,14 +321,14 @@
                                     </li>
                                 @endforeach
                                 <li class="d-flex justify-content-between fw-bold mt-2">
-                                    <span>Subtotal:</span>
+                                    <span>សរុបរង:</span>
                                     <span>R{{ number_format($cartTotal, 2) }}</span>
                                 </li>
                                 <li class="text-center mt-3">
-                                    <a href="{{ route('checkout') }}" class="btn btn-primary w-100">Checkout</a>
+                                    <a href="{{ route('checkout') }}" class="btn btn-primary w-100">ពិនិត្យលុយ</a>
                                 </li>
                             @else
-                                <li class="text-center text-muted">Your cart is empty.</li>
+                                <li class="text-center text-muted">រទេះទំនេរ។</li>
                             @endif
                         </ul>
                     </li>
@@ -385,41 +384,49 @@
 
         // Existing jQuery logic...
         $(document).ready(function() {
-            $('.remove-from-cart').click(function(e) {
+            // Handle click on remove button
+            $(document).on('click', '.remove-from-cart', function(e) {
                 e.preventDefault();
                 let id = $(this).data('id');
 
-                $.ajax({
-                    url: '{{ route('cart.remove') }}',
-                    method: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        id: id
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            // Remove the item from the DOM
-                            $('[data-id="' + id + '"]').closest('li').remove();
+                if (confirm('តើអ្នកពិតជាចង់លុបធាតុនេះចេញពីរទេះមែនទេ?')) {
+                    $.ajax({
+                        url: '{{ route('cart.remove') }}',
+                        method: 'DELETE',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            id: id
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                // Remove item from DOM
+                                // $('[data-id="' + id + '"]').closest('li').remove();
+                                 $(`li.cart-item[data-item-id="${id}"]`).remove();
 
-                            // Update cart count
-                            $('.cart-count').text(response.cartCount);
+                                // Update cart count
+                                $('.cart-count').text(response.cartCount);
 
-                            // Optionally show an alert or update subtotal
-                            // If cart is empty, show empty message
-                            if (response.cartCount === 0) {
-                                $('.dropdown-menu').html(
-                                    '<li class="text-center text-muted">Your cart is empty.</li>'
+                                // Update subtotal
+                                // $('.cart-subtotal').text('R' + response.subtotal
+                                //     .toFixed(2));
+                                $('.cart-subtotal span:last').text('R' + response.subtotal.toFixed(2));
+
+                                // If cart is empty, show empty message
+                                if (response.cartCount === 0) {
+                                    $('.dropdown-menu').html(
+                                        '<li class="text-center text-muted">រទេះទំនេរ។</li>'
                                     );
-                            } else {
-                                // Recalculate subtotal on frontend or reload
-                                location.reload();
+                                }
+
+                                toastr.success(response.message);
                             }
+                        },
+                        error: function(xhr) {
+                            toastr.error(xhr.responseJSON.message ||
+                                'មានបញ្ហាកើតឡើង!');
                         }
-                    },
-                    error: function() {
-                        alert('Something went wrong!');
-                    }
-                });
+                    });
+                }
             });
         });
 

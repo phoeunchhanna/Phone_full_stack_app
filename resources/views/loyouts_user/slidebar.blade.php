@@ -10,7 +10,6 @@
         <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="4" class="rounded-circle" style="width: 12px; height: 12px;"></button>
         <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="5" class="rounded-circle" style="width: 12px; height: 12px;"></button>
     </div>
-    
     <!-- Slides -->
     <div class="carousel-inner rounded-3 overflow-hidden">
         <!-- Slide 1 -->
@@ -22,7 +21,6 @@
             <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 p-4 rounded start-50 translate-middle-x" style="bottom: 30%;">
                 <h3>Iphone 16 pro</h3>
                 <p class="mb-2">That list grows to include larger displays, a new 48MP camera, 4K120 video support, 48MP ultrawide camera, new Photographic Styles workflow, surround audio, 5× telephoto lens (which arrived last year on the Pro Max model only), and (of course) chip improvements courtesy of the new A18 Pro chip.</p>
-                <a href="#" class="btn btn-primary btn-sm">Shop Now</a>
             </div>
         </div>
         
@@ -40,7 +38,6 @@
                     Protection	Corning Gorilla Armor
                          Always-on display
                     DX anti-reflective coating</p>
-                <a href="#" class="btn btn-primary btn-sm">Shop Now</a>
             </div>
         </div>
 
@@ -52,7 +49,6 @@
             <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 p-4 rounded start-50 translate-middle-x" style="bottom: 30%;">
                 <h3> Oppo reno 12 F 5G</h3>
                 <p class="mb-2">Oppo is expected to introduce the Reno 13 and Reno 13 Pro in China on November 25. According to a new report, the mid-range series will remain exclusive to China until early next year.</p>
-                <a href="#" class="btn btn-primary btn-sm">Shop Now</a>
             </div>
             
         </div> <div class="carousel-item">
@@ -63,10 +59,10 @@
             <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 p-4 rounded start-50 translate-middle-x" style="bottom: 30%;">
                 <h3>Vivo X200 series</h3>
                 <p class="mb-2">A new leak suggests that Vivo is planning to expand its X200 smartphone series with two new models in 2025. This reflects Vivo's previous strategy of mid-cycle model refreshes, as seen with the X100 series.</p>
-                <a href="#" class="btn btn-primary btn-sm">View Deals</a>
             </div>
         </div>
     </div>
+
     
     <!-- Controls -->
     <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">

@@ -15,16 +15,17 @@
 
 </head>
 
-<body>
+<body >
 
     @include('loyouts_user.header')
     {{-- @section('sidbar')
         Helloe
     @show --}}
-    <main class="">
+    <main class="bg-secondary pb-3 pt-3">
         @yield('content')
     </main>
 
+    @include('loyouts_user.footer')
     <!-- Bootstrap JS Bundle with Popper -->
 
     @stack('scripts')

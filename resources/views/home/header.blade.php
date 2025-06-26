@@ -115,7 +115,7 @@
         <li class="nav-item dropdown has-arrow new-user-menus">
             <a href="#" class="dropdown-toggle nav-link" data-bs-toggle="dropdown">
                 <span class="user-img">
-                    <img src="{{ asset('storage/' . Auth::user()->avatar ?? 'default-avatar.png') }}"
+                    <img src="{{ asset('storage/' . Auth::user()->avatar ?? 'default.png') }}"
                         alt="Profile Image" class="avatar-img rounded-circle border border-5-hover" width="40"
                         height="40">
                     <div class="user-text">

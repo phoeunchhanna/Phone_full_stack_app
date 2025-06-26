@@ -1,18 +1,16 @@
 @extends('loyouts_user.app')
 
 @section('content')
-    <div class="container mt-5">
-        <h2>Checkout</h2>
+    <div class="container ">
+        <h2 >Checkout</h2>
 
         @if (session('error'))
             <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
-
-        <div class="row">
+        <div class="row ">
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-header bg-primary text-white ">Customer Orders</div>
-                    <p>Enter infor below </p>
                     <div class="card-body">
                         <form method="POST" action="{{ route('checkout.process') }}">
                             @csrf
@@ -56,17 +54,9 @@
                                     <label class="form-check-label" for="percentageDiscount">
                                         Percentage Discount
                                     </label>
-                                    <input type="number" class="form-control mt-2" id="discount" name="discount"
-                                        min="0" max="100" placeholder="0-100%" disabled>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="discount_type" id="fixedDiscount"
-                                        value="fixed">
-                                    <label class="form-check-label" for="fixedDiscount">
-                                        Fixed Amount Discount
-                                    </label>
-                                    <input type="number" class="form-control mt-2" id="discount_amount"
-                                        name="discount_amount" min="0" placeholder="Amount" disabled>
+                                    <input type="number" class="form-control mt-2" id="discount_percentage"
+                                        name="discount_percentage" min="0" max="100" placeholder="0-100%"
+                                        >
                                 </div>
                             </div>
 
@@ -94,9 +84,8 @@
                                     <tr class="align-middle">
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <img src="{{ asset('storage/' . $item['image']) }}"
-                                                    alt="{{ $item['name'] }}" class="img-thumbnail me-2"
-                                                    style="width: 50px; height: 50px;">
+                                                <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}"
+                                                    class="img-thumbnail me-2" style="width: 50px; height: 50px;">
                                                 <span>{{ $item['name'] }}</span>
                                             </div>
                                         </td>
@@ -138,36 +127,45 @@
         $(document).ready(function() {
             // Enable/disable discount inputs based on selection
             $('input[name="discount_type"]').change(function() {
-                const type = $(this).val();
-                $('#discount, #discount_amount').prop('disabled', true).val('');
+                // Disable both discount inputs first
+                $('#discount_percentage, #discount_amount').prop('disabled', true).val('');
 
-                if (type === 'percentage') {
-                    $('#discount').prop('disabled', false).focus();
-                } else if (type === 'fixed') {
-                    $('#discount_amount').prop('disabled', false).focus();
+                // Reset discount display when no discount is selected
+                if (this.value === 'none') {
+                    $('#discountDisplay').text('$0.00');
+                    $('#totalDisplay').text('${{ number_format($subtotal, 2) }}');
+                    return;
                 }
 
-                updateTotals();
+                // Enable only the selected discount type
+                if (this.value === 'percentage') {
+                    $('#discount_percentage').prop('disabled', false).focus();
+                } else if (this.value === 'fixed') {
+                    $('#discount_amount').prop('disabled', false).focus();
+                }
             });
 
             // Update totals when discount values change
-            $('#discount, #discount_amount').on('input', updateTotals);
+            $('#discount_percentage, #discount_amount').on('input', updateTotals);
 
             function updateTotals() {
                 const subtotal = {{ $subtotal }};
                 let discount = 0;
                 const discountType = $('input[name="discount_type"]:checked').val();
 
+                // Calculate discount based on selected type
                 if (discountType === 'percentage') {
-                    const percent = parseFloat($('#discount').val()) || 0;
+                    const percent = parseFloat($('#discount_percentage').val()) || 0;
                     discount = (subtotal * percent) / 100;
                 } else if (discountType === 'fixed') {
                     discount = parseFloat($('#discount_amount').val()) || 0;
-                    if (discount > subtotal) discount = subtotal;
+                    // Ensure discount doesn't exceed subtotal
+                    discount = Math.min(discount, subtotal);
                 }
 
                 const total = subtotal - discount;
 
+                // Update display
                 $('#discountDisplay').text('$' + discount.toFixed(2));
                 $('#totalDisplay').text('$' + total.toFixed(2));
             }

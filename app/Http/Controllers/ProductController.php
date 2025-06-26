@@ -48,6 +48,7 @@ class ProductController extends Controller
         $brands     = Brand::all();
         return view('admin.products.create', compact('categories', 'brands'));
     }
+    
     public function store(Request $request)
     {
         // Validate input fields

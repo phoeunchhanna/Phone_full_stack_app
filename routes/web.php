@@ -35,10 +35,15 @@ Route::get('/', function () {
 Route::get('/', [ClientController::class, 'userhome'])->name('client.home');
 Route::get('/pro_client/{id}', [ClientController::class, 'pro_show'])->name('product_client.show');
 Route::get('/pro_list_client/{id}', [ClientController::class, 'pro_list_show'])->name('product_client.list');
+
+// show category of product
+Route::get('/categories/{id}', [ClientController::class, 'show'])->name('categories.show');
+
 // Show products by brand
-Route::get('/brand/{id}', [ClientController::class, 'productsByBrand'])->name('brand.products');
+Route::get('/brand/{id}/products', [ClientController::class, 'productsByBrand'])->name('brand.products');
 // Show products by category
 Route::get('/category/{id}', [ClientController::class, 'productsByCategory'])->name('category.products');
+
 Route::get('/add-to-cart/{id}', [ClientController::class, 'addToCart'])->name('add.to.cart');
 Route::post('/update-cart', [ClientController::class, 'updateCart'])->name('cart.update');
 Route::delete('/cart/remove', [ClientController::class, 'removeFromCart'])->name('cart.remove');
@@ -49,9 +54,13 @@ Route::get('/checkout', [ClientController::class, 'checkout'])->name('checkout')
 Route::post('/checkout/process', [ClientController::class, 'processCheckout'])->name('checkout.process');
 Route::get('/order/confirmation', [ClientController::class, 'orderConfirmation'])->name('order.confirmation');
 Route::get('/order/print', [ClientController::class, 'printOrder'])->name('order.print');
+// increase decrease
 Route::post('/cart/increase/{id}', [ClientController::class, 'increaseQuantity'])->name('cart.increase');
+Route::post('/cart/decrease/{id}', [ClientController::class, 'decreaseQuantity'])->name('cart.decrease');
+Route::post('/cart/update/{id}', [ClientController::class, 'updateQuantity'])->name('cart.update');
 
-
+Route::get('/contact', [ClientController::class, 'showContactForm'])->name('contact.form');
+Route::post('/contact', [ClientController::class, 'submitContactForm'])->name('contact.submit');
 
 
 // client side 

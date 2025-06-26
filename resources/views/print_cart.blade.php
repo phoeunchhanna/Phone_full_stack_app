@@ -1,35 +1,51 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Order Confirmation</title>
     <style>
-        body { font-family: Arial, sans-serif; }
+        body {
+            font-family: Arial, sans-serif;
+        }
+
         .invoice-box {
             max-width: 800px;
             margin: auto;
             padding: 20px;
             border: 1px solid #eee;
         }
+
         .header {
             text-align: center;
             margin-bottom: 20px;
         }
+
         .table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
-        .table th, .table td {
+
+        .table th,
+        .table td {
             border: 1px solid #ddd;
             padding: 8px;
         }
-        .text-right { text-align: right; }
-        .text-center { text-align: center; }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
         .info p {
             margin: 4px 0;
         }
     </style>
 </head>
+
 <body>
     <div class="invoice-box">
         <div class="header">
@@ -62,7 +78,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($order->saleDetails as $item)
+                @foreach ($order->saleDetails as $item)
                     <tr>
                         <td>{{ $item->product->name }}</td>
                         <td>${{ number_format($item->unit_price, 2) }}</td>
@@ -78,14 +94,26 @@
         </table>
 
         <div class="text-center mt-4">
-            <p>Thank you for your purchase!</p>
+            <p>Thank you for your buying !</p>
         </div>
     </div>
 
     <script>
-        window.onload = function () {
+        window.onload = function() {
+            // Print the invoice
             window.print();
-        }
+
+            // After printing, redirect to home page
+            setTimeout(function() {
+                window.location.href = "{{ route('client.home') }}";
+            }, 500); // Small delay to ensure print dialog is shown
+        };
+
+        // For browsers that support afterprint event
+        window.onafterprint = function() {
+            window.location.href = "{{ route('client.home') }}";
+        };
     </script>
 </body>
+
 </html>
